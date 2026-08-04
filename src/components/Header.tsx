@@ -1,9 +1,13 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-export default function Header() {
+type HeaderProps = {
+  title: string;
+};
+
+export default function Header({ title }: HeaderProps) {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Bem-vindo ao ChefUP</Text>
+      <Text style={styles.title}>{title}</Text>
     </View>
   );
 }
