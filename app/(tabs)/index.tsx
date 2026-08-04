@@ -17,7 +17,7 @@ export default function Index() {
           <Text style={styles.buttonText}>Ganhar moeda</Text>
         </Pressable>
       
-        <Text style={styles.coinText}>Xp: {xp}</Text>
+        <Text style={styles.coinText}>XP: {xp}</Text>
 
         <Pressable style={styles.button} onPress={() => setXp(xp + 10)}>
           <Text style={styles.buttonText}>Ganhar XP</Text>
