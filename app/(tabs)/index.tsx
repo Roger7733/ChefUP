@@ -1,10 +1,12 @@
 import Header from '@/components/Header';
-import { useState } from 'react';
+import { useUserStore } from '@/viewmodels/userStore';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 export default function Index() {
-  const [coins, setCoins] = useState(0);
-  const [xp, setXp] = useState(0);
+  const coins = useUserStore((state) => state.coins);
+  const xp = useUserStore((state) => state.xp);
+  const addCoins = useUserStore((state) => state.addCoins);
+  const addXp = useUserStore((state) => state.addXp);
 
   return (
     <View style={styles.screen}>
@@ -13,13 +15,13 @@ export default function Index() {
       <View style={styles.content}>
         <Text style={styles.coinText}>Moedas: {coins}</Text>
 
-        <Pressable style={styles.button} onPress={() => setCoins(coins + 5)}>
+        <Pressable style={styles.button} onPress={() => addCoins(5)}>
           <Text style={styles.buttonText}>Ganhar moeda</Text>
         </Pressable>
-      
+
         <Text style={styles.coinText}>XP: {xp}</Text>
 
-        <Pressable style={styles.button} onPress={() => setXp(xp + 10)}>
+        <Pressable style={styles.button} onPress={() => addXp(10)}>
           <Text style={styles.buttonText}>Ganhar XP</Text>
         </Pressable>
       </View>
