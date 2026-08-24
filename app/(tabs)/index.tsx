@@ -1,5 +1,6 @@
 import Header from '@/components/Header';
 import { useUserStore } from '@/viewmodels/userStore';
+import { Link } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 export default function Index() {
@@ -13,6 +14,7 @@ export default function Index() {
       <Header title="Bem-vindo ao ChefUP" />
 
       <View style={styles.content}>
+
         <Text style={styles.coinText}>Moedas: {coins}</Text>
 
         <Pressable style={styles.button} onPress={() => addCoins(5)}>
@@ -24,6 +26,10 @@ export default function Index() {
         <Pressable style={styles.button} onPress={() => addXp(10)}>
           <Text style={styles.buttonText}>Ganhar XP</Text>
         </Pressable>
+
+        <Link href="/cadastro" style={styles.coinText}>Ir para cadastro →</Link>
+
+        <Link href="/login" style={styles.coinText}>Ir para login →</Link>
       </View>
     </View>
   );
