@@ -1,6 +1,7 @@
 import { User } from '@/models/User';
 import { registrar } from '@/services/authService';
 import { salvarUsuario } from '@/services/userService';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -26,6 +27,7 @@ export default function Cadastro() {
 
         await salvarUsuario(novoUsuario);
         setMensagem('Conta criada e salva no banco!');
+        router.replace('/(tabs)');
     } catch (erro: any) {
         setMensagem('Erro: ' + (erro.message || JSON.stringify(erro)));
         console.log('ERRO COMPLETO:', erro);

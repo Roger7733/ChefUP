@@ -1,4 +1,5 @@
 import { entrar } from '@/services/authService';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -11,6 +12,7 @@ export default function Login() {
     try {
       const usuario = await entrar(email, senha);
       setMensagem('Login feito! ID: ' + usuario.uid);
+      router.replace('/(tabs)');
     } catch (erro: any) {
       setMensagem('Erro: ' + erro.code);
     }
