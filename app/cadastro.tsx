@@ -1,4 +1,6 @@
+import { User } from '@/models/User';
 import { registrar } from '@/services/authService';
+import { salvarUsuario } from '@/services/userService';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -8,13 +10,27 @@ export default function Cadastro() {
   const [mensagem, setMensagem] = useState('');
 
   async function handleCadastro() {
-    try {
-      const usuario = await registrar(email, senha);
-      setMensagem('Conta criada! ID: ' + usuario.uid);
+  try {
+    const usuario = await registrar(email, senha);
+
+    const novoUsuario: User = {
+      id: usuario.uid,
+      name: '',
+      email: email,
+      level: 1,
+      xp: 0,
+      coins: 0,
+      streak: 0,
+      lastAccess: new Date().toISOString(),
+        };
+
+        await salvarUsuario(novoUsuario);
+        setMensagem('Conta criada e salva no banco!');
     } catch (erro: any) {
-      setMensagem('Erro: ' + erro.code);
+        setMensagem('Erro: ' + (erro.message || JSON.stringify(erro)));
+        console.log('ERRO COMPLETO:', erro);
     }
-  }
+    }
 
   return (
     <View style={styles.screen}>
