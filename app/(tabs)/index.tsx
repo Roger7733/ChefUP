@@ -1,36 +1,32 @@
 import Header from '@/components/Header';
-import { useUserStore } from '@/viewmodels/userStore';
-import { Link } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { World } from '@/models/World';
+import { buscarMundos } from '@/services/worldService';
+import { useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function Index() {
-  const coins = useUserStore((state) => state.coins);
-  const xp = useUserStore((state) => state.xp);
-  const addCoins = useUserStore((state) => state.addCoins);
-  const addXp = useUserStore((state) => state.addXp);
+  const [mundos, setMundos] = useState<World[]>([]);
+
+  useEffect(() => {
+    async function carregar() {
+      const lista = await buscarMundos();
+      setMundos(lista);
+    }
+    carregar();
+  }, []);
 
   return (
     <View style={styles.screen}>
-      <Header title="Bem-vindo ao ChefUP" />
-
-      <View style={styles.content}>
-
-        <Text style={styles.coinText}>Moedas: {coins}</Text>
-
-        <Pressable style={styles.button} onPress={() => addCoins(5)}>
-          <Text style={styles.buttonText}>Ganhar moeda</Text>
-        </Pressable>
-
-        <Text style={styles.coinText}>XP: {xp}</Text>
-
-        <Pressable style={styles.button} onPress={() => addXp(10)}>
-          <Text style={styles.buttonText}>Ganhar XP</Text>
-        </Pressable>
-
-        <Link href="/cadastro" style={styles.coinText}>Ir para cadastro →</Link>
-
-        <Link href="/login" style={styles.coinText}>Ir para login →</Link>
-      </View>
+      <Header title="Mundos" />
+      <ScrollView contentContainerStyle={styles.content}>
+        {mundos.map((mundo) => (
+          <View key={mundo.id} style={styles.card}>
+            <Text style={styles.cardTitle}>{mundo.name}</Text>
+            <Text style={styles.cardSubtitle}>{mundo.cuisineType}</Text>
+            <Text style={styles.cardLevel}>Nível mínimo: {mundo.minLevel}</Text>
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
 }
@@ -40,23 +36,29 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 24,
-    gap: 16,
+    padding: 16,
+    gap: 12,
   },
-  coinText: {
+  card: {
+    backgroundColor: '#FFF3EE',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#FFD9C9',
+  },
+  cardTitle: {
     fontSize: 20,
     fontWeight: 'bold',
+    color: '#FF6B35',
   },
-  button: {
-    backgroundColor: '#FF6B35',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
+  cardSubtitle: {
+    fontSize: 14,
+    color: '#666666',
+    marginTop: 4,
   },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+  cardLevel: {
+    fontSize: 13,
+    color: '#999999',
+    marginTop: 8,
   },
 });
