@@ -2,8 +2,9 @@ import Header from '@/components/Header';
 import { World } from '@/models/World';
 import { buscarMundos } from '@/services/worldService';
 import { useUserStore } from '@/viewmodels/userStore';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function Index() {
   const [mundos, setMundos] = useState<World[]>([]);
@@ -25,20 +26,23 @@ export default function Index() {
           const bloqueado = level < mundo.minLevel;
 
           return (
-            <View
+              <Pressable
               key={mundo.id}
               style={[styles.card, bloqueado && styles.cardBloqueado]}
+              onPress={() => {
+                if (!bloqueado) {
+                  router.push(`/mundo/${mundo.id}`);
+                }
+              }}
             >
               <Text style={[styles.cardTitle, bloqueado && styles.textoBloqueado]}>
                 {bloqueado ? '🔒 ' : ''}{mundo.name}
               </Text>
               <Text style={styles.cardSubtitle}>{mundo.cuisineType}</Text>
               <Text style={styles.cardLevel}>
-                {bloqueado
-                  ? `Requer nível ${mundo.minLevel}`
-                  : 'Liberado'}
+                {bloqueado ? `Requer nível ${mundo.minLevel}` : 'Liberado'}
               </Text>
-            </View>
+            </Pressable>
           );
         })}
       </ScrollView>
