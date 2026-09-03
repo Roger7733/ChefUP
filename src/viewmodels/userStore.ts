@@ -1,3 +1,4 @@
+import { User } from '@/models/User';
 import { create } from 'zustand';
 
 type UserState = {
@@ -6,6 +7,7 @@ type UserState = {
   level: number;
   addCoins: (amount: number) => void;
   addXp: (amount: number) => void;
+  setUsuario: (usuario: User) => void;
 };
 
 export const useUserStore = create<UserState>((set) => ({
@@ -18,4 +20,11 @@ export const useUserStore = create<UserState>((set) => ({
 
   addXp: (amount) =>
     set((state) => ({ xp: state.xp + amount })),
+
+  setUsuario: (usuario) =>
+    set({
+      coins: usuario.coins,
+      xp: usuario.xp,
+      level: usuario.level,
+    }),
 }));
