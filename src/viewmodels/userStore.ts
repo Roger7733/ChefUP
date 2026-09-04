@@ -1,4 +1,6 @@
 import { User } from '@/models/User';
+import { UserItem } from '@/models/UserItem';
+import { registrarCompra } from '@/services/shopService';
 import { salvarUsuario } from '@/services/userService';
 import { calcularNivel } from '@/utils/levelSystem';
 import { calcularStreak } from '@/utils/streakSystem';
@@ -18,6 +20,7 @@ type UserState = {
   setUsuario: (usuario: User) => void;
   completarFase: (rewardXp: number) => Promise<void>;
   registrarAcesso: () => Promise<void>;
+  comprarItem: (itemId: string, preco: number) => Promise<boolean>;
 };
 
 export const useUserStore = create<UserState>((set, get) => ({
@@ -91,5 +94,38 @@ export const useUserStore = create<UserState>((set, get) => ({
     };
 
     await salvarUsuario(usuarioAtualizado);
+  },
+
+  comprarItem: async (itemId, preco) => {
+  const estado = get();
+
+  if (estado.coins < preco) {
+    return false;
+  }
+
+  const novasMoedas = estado.coins - preco;
+  set({ coins: novasMoedas });
+
+  const usuarioAtualizado: User = {
+    id: estado.id,
+    name: estado.name,
+    email: estado.email,
+    coins: novasMoedas,
+    xp: estado.xp,
+    level: estado.level,
+    streak: estado.streak,
+    lastAccess: estado.lastAccess,
+  };
+  await salvarUsuario(usuarioAtualizado);
+
+  const novoUserItem: UserItem = {
+    id: `${estado.id}_${itemId}`,
+    userId: estado.id,
+    itemId: itemId,
+    equipped: false,
+  };
+  await registrarCompra(novoUserItem);
+
+  return true;
   },
 }));
