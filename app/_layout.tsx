@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 export default function RootLayout() {
   const [carregando, setCarregando] = useState(true);
   const setUsuario = useUserStore((state) => state.setUsuario);
+  const registrarAcesso = useUserStore((state) => state.registrarAcesso);
 
   useEffect(() => {
     const inscricao = onAuthStateChanged(auth, async (usuario) => {
@@ -15,6 +16,7 @@ export default function RootLayout() {
         const dados = await buscarUsuario(usuario.uid);
         if (dados) {
           setUsuario(dados);
+          await registrarAcesso();
         }
         router.replace('/(tabs)');
       } else {

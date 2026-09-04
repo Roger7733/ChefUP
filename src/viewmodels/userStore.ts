@@ -1,11 +1,13 @@
 import { User } from '@/models/User';
 import { salvarUsuario } from '@/services/userService';
 import { calcularNivel } from '@/utils/levelSystem';
+import { calcularStreak } from '@/utils/streakSystem';
 import { create } from 'zustand';
 
 type UserState = {
   id: string;
   name: string;
+  email: string;
   coins: number;
   xp: number;
   level: number;
@@ -15,11 +17,13 @@ type UserState = {
   addXp: (amount: number) => void;
   setUsuario: (usuario: User) => void;
   completarFase: (rewardXp: number) => Promise<void>;
+  registrarAcesso: () => Promise<void>;
 };
 
 export const useUserStore = create<UserState>((set, get) => ({
   id: '',
   name: '',
+  email: '',
   coins: 0,
   xp: 0,
   level: 1,
@@ -36,6 +40,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({
       id: usuario.id,
       name: usuario.name,
+      email: usuario.email,
       coins: usuario.coins,
       xp: usuario.xp,
       level: usuario.level,
@@ -55,12 +60,34 @@ export const useUserStore = create<UserState>((set, get) => ({
     const usuarioAtualizado: User = {
       id: estado.id,
       name: estado.name,
-      email: '',
+      email: estado.email,
       coins: novasMoedas,
       xp: novoXp,
       level: novoNivel,
       streak: estado.streak,
-      lastAccess: new Date().toISOString(),
+      lastAccess: estado.lastAccess,
+    };
+
+    await salvarUsuario(usuarioAtualizado);
+  },
+
+  registrarAcesso: async () => {
+    const estado = get();
+
+    const novoStreak = calcularStreak(estado.streak, estado.lastAccess);
+    const hoje = new Date().toISOString();
+
+    set({ streak: novoStreak, lastAccess: hoje });
+
+    const usuarioAtualizado: User = {
+      id: estado.id,
+      name: estado.name,
+      email: estado.email,
+      coins: estado.coins,
+      xp: estado.xp,
+      level: estado.level,
+      streak: novoStreak,
+      lastAccess: hoje,
     };
 
     await salvarUsuario(usuarioAtualizado);
