@@ -9,3 +9,7 @@ export function xpParaProximoNivel(xp: number): number {
   const xpNecessario = nivelAtual * XP_POR_NIVEL;
   return xpNecessario - xp;
 }
+
+export function calcularXpDaNota(rewardXp: number, nota: number): number {
+  return Math.round(rewardXp * (nota / 5));
+}

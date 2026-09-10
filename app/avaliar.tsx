@@ -1,12 +1,19 @@
 import { avaliarPrato, ResultadoIA } from '@/services/iaService';
+import { calcularXpDaNota } from '@/utils/levelSystem';
+import { useUserStore } from '@/viewmodels/userStore';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+
+const XP_BASE_FASE = 20;
 
 export default function Avaliar() {
   const [foto, setFoto] = useState<string | null>(null);
   const [processando, setProcessando] = useState(false);
   const [resultado, setResultado] = useState<ResultadoIA | null>(null);
+  const [xpGanho, setXpGanho] = useState<number | null>(null);
+
+  const completarFase = useUserStore((state) => state.completarFase);
 
   async function escolherFoto() {
     const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -27,11 +34,16 @@ export default function Avaliar() {
     const base64 = selecao.assets[0].base64;
     setFoto(uriLocal);
     setResultado(null);
+    setXpGanho(null);
 
     try {
       setProcessando(true);
       const avaliacao = await avaliarPrato(base64!);
       setResultado(avaliacao);
+
+      const xp = calcularXpDaNota(XP_BASE_FASE, avaliacao.nota);
+      await completarFase(xp);
+      setXpGanho(xp);
     } catch (erro: any) {
       Alert.alert('Erro', erro.message);
     } finally {
@@ -60,11 +72,12 @@ export default function Avaliar() {
 
       {resultado && (
         <View style={styles.resultado}>
-          <Text style={styles.estrelas}>
-            {'⭐'.repeat(resultado.nota)}
-          </Text>
+          <Text style={styles.estrelas}>{'⭐'.repeat(resultado.nota)}</Text>
           <Text style={styles.notaTexto}>Nota: {resultado.nota}/5</Text>
           <Text style={styles.feedback}>{resultado.feedback}</Text>
+          {xpGanho !== null && (
+            <Text style={styles.xp}>+{xpGanho} XP · +10 moedas 🎉</Text>
+          )}
         </View>
       )}
 
@@ -97,6 +110,7 @@ const styles = StyleSheet.create({
   estrelas: { fontSize: 28 },
   notaTexto: { fontSize: 18, fontWeight: 'bold', color: '#333333' },
   feedback: { fontSize: 15, color: '#666666', textAlign: 'center' },
+  xp: { fontSize: 16, fontWeight: 'bold', color: '#4CAF50', marginTop: 8 },
   botao: {
     backgroundColor: '#FF6B35', paddingVertical: 14, paddingHorizontal: 24, borderRadius: 10,
   },
