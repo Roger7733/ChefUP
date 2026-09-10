@@ -2,12 +2,19 @@ import { avaliarPrato, ResultadoIA } from '@/services/iaService';
 import { calcularXpDaNota } from '@/utils/levelSystem';
 import { useUserStore } from '@/viewmodels/userStore';
 import * as ImagePicker from 'expo-image-picker';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
-const XP_BASE_FASE = 20;
-
 export default function Avaliar() {
+  const { rewardXp, faseNome } = useLocalSearchParams<{
+    faseId: string;
+    rewardXp: string;
+    faseNome: string;
+  }>();
+
+  const xpBase = Number(rewardXp) || 20;
+
   const [foto, setFoto] = useState<string | null>(null);
   const [processando, setProcessando] = useState(false);
   const [resultado, setResultado] = useState<ResultadoIA | null>(null);
@@ -38,10 +45,10 @@ export default function Avaliar() {
 
     try {
       setProcessando(true);
-      const avaliacao = await avaliarPrato(base64!);
+      const avaliacao = await avaliarPrato(base64!, faseNome || 'prato');
       setResultado(avaliacao);
 
-      const xp = calcularXpDaNota(XP_BASE_FASE, avaliacao.nota);
+      const xp = calcularXpDaNota(xpBase, avaliacao.nota);
       await completarFase(xp);
       setXpGanho(xp);
     } catch (erro: any) {
@@ -54,12 +61,13 @@ export default function Avaliar() {
   return (
     <View style={styles.screen}>
       <Text style={styles.title}>Avaliar prato</Text>
+      {faseNome && <Text style={styles.subtitulo}>{faseNome}</Text>}
 
       {foto ? (
         <Image source={{ uri: foto }} style={styles.foto} />
       ) : (
         <View style={styles.placeholder}>
-          <Text style={styles.placeholderTexto}>Nenhuma foto ainda</Text>
+          <Text style={styles.placeholderTexto}>Fotografe seu prato</Text>
         </View>
       )}
 
@@ -81,9 +89,15 @@ export default function Avaliar() {
         </View>
       )}
 
-      <Pressable style={styles.botao} onPress={escolherFoto} disabled={processando}>
-        <Text style={styles.botaoTexto}>Escolher foto do prato</Text>
-      </Pressable>
+      {xpGanho !== null ? (
+        <Pressable style={styles.botao} onPress={() => router.back()}>
+          <Text style={styles.botaoTexto}>Voltar à trilha</Text>
+        </Pressable>
+      ) : (
+        <Pressable style={styles.botao} onPress={escolherFoto} disabled={processando}>
+          <Text style={styles.botaoTexto}>Escolher foto do prato</Text>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -91,9 +105,10 @@ export default function Avaliar() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1, padding: 24, justifyContent: 'center', alignItems: 'center',
-    gap: 20, backgroundColor: '#FFF9F6',
+    gap: 16, backgroundColor: '#FFF9F6',
   },
   title: { fontSize: 24, fontWeight: 'bold', color: '#FF6B35' },
+  subtitulo: { fontSize: 16, color: '#666666', textAlign: 'center' },
   foto: { width: 240, height: 240, borderRadius: 16 },
   placeholder: {
     width: 240, height: 240, borderRadius: 16,

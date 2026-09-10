@@ -1,7 +1,7 @@
 import { Phase } from '@/models/Phase';
 import { buscarFasesDoMundo } from '@/services/phaseService';
 import { useUserStore } from '@/viewmodels/userStore';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -41,7 +41,12 @@ export default function MundoScreen() {
           >
             <Pressable
               style={styles.fase}
-              onPress={() => completarFase(fase.rewardXp)}
+                onPress={() =>
+                  router.push({
+                    pathname: '/avaliar',
+                    params: { faseId: fase.id, rewardXp: fase.rewardXp, faseNome: fase.name },
+                  })
+                }
             >
               <Text style={styles.faseNumero}>{indice + 1}</Text>
             </Pressable>
