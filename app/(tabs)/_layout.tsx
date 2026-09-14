@@ -3,22 +3,22 @@ import { Tabs } from 'expo-router';
 
 export default function TabsLayout() {
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: '#FF6B35' }}>
+    <Tabs screenOptions={{ tabBarActiveTintColor: '#D63E2A', headerShown: false }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Mapa',
+          title: 'Aprender',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="map" color={color} size={size} />
           ),
         }}
       />
       <Tabs.Screen
-        name="ranking"
+        name="amigos"
         options={{
-          title: 'Ranking',
+          title: 'Amigos',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="trophy" color={color} size={size} />
+            <Ionicons name="people" color={color} size={size} />
           ),
         }}
       />

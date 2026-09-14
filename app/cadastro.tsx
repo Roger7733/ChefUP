@@ -6,37 +6,50 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 export default function Cadastro() {
+  const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [mensagem, setMensagem] = useState('');
 
   async function handleCadastro() {
-  try {
-    const usuario = await registrar(email, senha);
+    if (nome.trim() === '') {
+      setMensagem('Por favor, informe seu nome.');
+      return;
+    }
 
-    const novoUsuario: User = {
-      id: usuario.uid,
-      name: '',
-      email: email,
-      level: 1,
-      xp: 0,
-      coins: 0,
-      streak: 0,
-      lastAccess: new Date().toISOString(),
-        };
+    try {
+      const usuario = await registrar(email, senha);
 
-        await salvarUsuario(novoUsuario);
-        setMensagem('Conta criada e salva no banco!');
-        router.replace('/(tabs)');
+      const novoUsuario: User = {
+        id: usuario.uid,
+        name: nome.trim(),
+        email: email,
+        level: 1,
+        xp: 0,
+        coins: 0,
+        streak: 0,
+        lastAccess: new Date().toISOString(),
+      };
+
+      await salvarUsuario(novoUsuario);
+      setMensagem('Conta criada e salva no banco!');
+      router.replace('/(tabs)');
     } catch (erro: any) {
-        setMensagem('Erro: ' + (erro.message || JSON.stringify(erro)));
-        console.log('ERRO COMPLETO:', erro);
+      setMensagem('Erro: ' + (erro.message || JSON.stringify(erro)));
+      console.log('ERRO COMPLETO:', erro);
     }
-    }
+  }
 
   return (
     <View style={styles.screen}>
       <Text style={styles.title}>Criar conta</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Seu nome"
+        value={nome}
+        onChangeText={setNome}
+      />
 
       <TextInput
         style={styles.input}
