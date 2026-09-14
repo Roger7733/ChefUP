@@ -43,6 +43,10 @@ export default function Login() {
         <Text style={styles.buttonText}>Entrar</Text>
       </Pressable>
 
+      <Pressable onPress={() => router.push('/cadastro')}>
+        <Text style={styles.link}>Não tenho conta — criar agora</Text>
+      </Pressable>
+
       <Text style={styles.mensagem}>{mensagem}</Text>
     </View>
   );
@@ -77,6 +81,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  link: {
+    fontSize: 15,
+    color: '#FF6B35',
+    textAlign: 'center',
+    fontWeight: '600',
   },
   mensagem: {
     fontSize: 14,

@@ -1,7 +1,8 @@
 import { auth } from '@/services/firebase';
 import {
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
 } from 'firebase/auth';
 
 export async function registrar(email: string, senha: string) {
@@ -12,4 +13,8 @@ export async function registrar(email: string, senha: string) {
 export async function entrar(email: string, senha: string) {
   const credencial = await signInWithEmailAndPassword(auth, email, senha);
   return credencial.user;
+}
+
+export async function sair() {
+  await signOut(auth);
 }
