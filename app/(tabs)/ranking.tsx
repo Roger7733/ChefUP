@@ -18,11 +18,7 @@ export default function Ranking() {
   async function carregarRanking() {
     try {
       setCarregando(true);
-
-      // 1. eu mesmo (dados atuais do banco)
       const eu = await buscarUsuario(meuId);
-
-      // 2. meus amigos
       const amizades = await listarAmigos(meuId);
       const amigos = await Promise.all(
         amizades.map(async (amizade) => {
@@ -30,13 +26,8 @@ export default function Ranking() {
           return await buscarUsuario(amigoId);
         })
       );
-
-      // 3. junta eu + amigos, remove nulos
       const todos = [eu, ...amigos].filter((u) => u !== null) as User[];
-
-      // 4. ordena por XP (maior primeiro)
       todos.sort((a, b) => b.xp - a.xp);
-
       setRanking(todos);
     } catch (erro: any) {
       console.log('ERRO AO CARREGAR RANKING:', erro?.message);
@@ -53,13 +44,84 @@ export default function Ranking() {
     );
   }
 
+  // separa os 3 primeiros (pódio) do resto (lista)
+  const podio = ranking.slice(0, 3);
+  const resto = ranking.slice(3);
+
+  // reorganiza o pódio na ordem visual: 2º, 1º, 3º
+  const primeiro = podio[0];
+  const segundo = podio[1];
+  const terceiro = podio[2];
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={{ paddingBottom: 40 }}>
       <Text style={styles.title}>Ranking</Text>
       <Text style={styles.subtitulo}>Você e seus amigos</Text>
 
-      {ranking.map((usuario, indice) => {
-        const posicao = indice + 1;
+      {/* PÓDIO */}
+      <View style={styles.podio}>
+        {/* 2º lugar */}
+        {segundo ? (
+          <View style={styles.podioItem}>
+            <View style={[styles.podioAvatar, styles.avatarPrata]}>
+              <Text style={styles.podioAvatarTexto}>{segundo.name.charAt(0).toUpperCase()}</Text>
+            </View>
+            <Text style={styles.podioMedalha}>🥈</Text>
+            <View style={[styles.podioBase, styles.baseSegundo]}>
+              <Text style={styles.podioPosicao}>2</Text>
+            </View>
+            <Text style={styles.podioNome} numberOfLines={1}>
+              {segundo.id === meuId ? 'Você' : segundo.name}
+            </Text>
+            <Text style={styles.podioXp}>{segundo.xp} XP</Text>
+          </View>
+        ) : (
+          <View style={styles.podioItem} />
+        )}
+
+        {/* 1º lugar */}
+        {primeiro ? (
+          <View style={styles.podioItem}>
+            <Text style={styles.coroa}>👑</Text>
+            <View style={[styles.podioAvatar, styles.avatarOuro]}>
+              <Text style={styles.podioAvatarTexto}>{primeiro.name.charAt(0).toUpperCase()}</Text>
+            </View>
+            <Text style={styles.podioMedalha}>🥇</Text>
+            <View style={[styles.podioBase, styles.basePrimeiro]}>
+              <Text style={styles.podioPosicao}>1</Text>
+            </View>
+            <Text style={styles.podioNome} numberOfLines={1}>
+              {primeiro.id === meuId ? 'Você' : primeiro.name}
+            </Text>
+            <Text style={styles.podioXp}>{primeiro.xp} XP</Text>
+          </View>
+        ) : (
+          <View style={styles.podioItem} />
+        )}
+
+        {/* 3º lugar */}
+        {terceiro ? (
+          <View style={styles.podioItem}>
+            <View style={[styles.podioAvatar, styles.avatarBronze]}>
+              <Text style={styles.podioAvatarTexto}>{terceiro.name.charAt(0).toUpperCase()}</Text>
+            </View>
+            <Text style={styles.podioMedalha}>🥉</Text>
+            <View style={[styles.podioBase, styles.baseTerceiro]}>
+              <Text style={styles.podioPosicao}>3</Text>
+            </View>
+            <Text style={styles.podioNome} numberOfLines={1}>
+              {terceiro.id === meuId ? 'Você' : terceiro.name}
+            </Text>
+            <Text style={styles.podioXp}>{terceiro.xp} XP</Text>
+          </View>
+        ) : (
+          <View style={styles.podioItem} />
+        )}
+      </View>
+
+      {/* LISTA DO 4º EM DIANTE */}
+      {resto.map((usuario, indice) => {
+        const posicao = indice + 4;
         const souEu = usuario.id === meuId;
         return (
           <View key={usuario.id} style={[styles.linha, souEu && styles.linhaEu]}>
@@ -86,6 +148,30 @@ const styles = StyleSheet.create({
   centro: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FBF6EC' },
   title: { fontSize: 24, fontWeight: 'bold', color: '#2A1A12' },
   subtitulo: { fontSize: 14, color: '#9B8674', marginBottom: 20 },
+
+  podio: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', marginBottom: 24, gap: 8 },
+  podioItem: { flex: 1, alignItems: 'center' },
+  coroa: { fontSize: 22, marginBottom: 2 },
+  podioAvatar: {
+    width: 56, height: 56, borderRadius: 28,
+    justifyContent: 'center', alignItems: 'center', borderWidth: 3,
+  },
+  avatarOuro: { backgroundColor: '#E8A736', borderColor: '#C68514' },
+  avatarPrata: { backgroundColor: '#B0B0B0', borderColor: '#909090' },
+  avatarBronze: { backgroundColor: '#C0803C', borderColor: '#9B6428' },
+  podioAvatarTexto: { color: '#FFF', fontSize: 22, fontWeight: 'bold' },
+  podioMedalha: { fontSize: 20, marginTop: -8 },
+  podioBase: {
+    width: '90%', justifyContent: 'flex-start', alignItems: 'center',
+    borderTopLeftRadius: 8, borderTopRightRadius: 8, paddingTop: 6, marginTop: 4,
+  },
+  basePrimeiro: { height: 70, backgroundColor: '#E8A736' },
+  baseSegundo: { height: 50, backgroundColor: '#B0B0B0' },
+  baseTerceiro: { height: 36, backgroundColor: '#C0803C' },
+  podioPosicao: { color: '#FFF', fontSize: 22, fontWeight: 'bold' },
+  podioNome: { fontSize: 14, fontWeight: 'bold', color: '#2A1A12', marginTop: 6, maxWidth: 90 },
+  podioXp: { fontSize: 12, color: '#E8A736', fontWeight: 'bold', marginTop: 2 },
+
   linha: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     backgroundColor: '#FFF', padding: 14, borderRadius: 12, marginBottom: 10,
