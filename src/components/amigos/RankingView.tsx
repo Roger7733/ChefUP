@@ -5,7 +5,7 @@ import { useUserStore } from '@/viewmodels/userStore';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-export default function Ranking() {
+export default function RankingView() {
   const meuId = useUserStore((state) => state.id);
 
   const [ranking, setRanking] = useState<User[]>([]);
@@ -44,23 +44,15 @@ export default function Ranking() {
     );
   }
 
-  // separa os 3 primeiros (pódio) do resto (lista)
   const podio = ranking.slice(0, 3);
   const resto = ranking.slice(3);
-
-  // reorganiza o pódio na ordem visual: 2º, 1º, 3º
   const primeiro = podio[0];
   const segundo = podio[1];
   const terceiro = podio[2];
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={{ paddingBottom: 40 }}>
-      <Text style={styles.title}>Ranking</Text>
-      <Text style={styles.subtitulo}>Você e seus amigos</Text>
-
-      {/* PÓDIO */}
+    <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
       <View style={styles.podio}>
-        {/* 2º lugar */}
         {segundo ? (
           <View style={styles.podioItem}>
             <View style={[styles.podioAvatar, styles.avatarPrata]}>
@@ -79,7 +71,6 @@ export default function Ranking() {
           <View style={styles.podioItem} />
         )}
 
-        {/* 1º lugar */}
         {primeiro ? (
           <View style={styles.podioItem}>
             <Text style={styles.coroa}>👑</Text>
@@ -99,7 +90,6 @@ export default function Ranking() {
           <View style={styles.podioItem} />
         )}
 
-        {/* 3º lugar */}
         {terceiro ? (
           <View style={styles.podioItem}>
             <View style={[styles.podioAvatar, styles.avatarBronze]}>
@@ -119,7 +109,6 @@ export default function Ranking() {
         )}
       </View>
 
-      {/* LISTA DO 4º EM DIANTE */}
       {resto.map((usuario, indice) => {
         const posicao = indice + 4;
         const souEu = usuario.id === meuId;
@@ -144,11 +133,7 @@ export default function Ranking() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, padding: 20, paddingTop: 60, backgroundColor: '#FBF6EC' },
-  centro: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FBF6EC' },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#2A1A12' },
-  subtitulo: { fontSize: 14, color: '#9B8674', marginBottom: 20 },
-
+  centro: { paddingVertical: 60, justifyContent: 'center', alignItems: 'center' },
   podio: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', marginBottom: 24, gap: 8 },
   podioItem: { flex: 1, alignItems: 'center' },
   coroa: { fontSize: 22, marginBottom: 2 },
@@ -171,7 +156,6 @@ const styles = StyleSheet.create({
   podioPosicao: { color: '#FFF', fontSize: 22, fontWeight: 'bold' },
   podioNome: { fontSize: 14, fontWeight: 'bold', color: '#2A1A12', marginTop: 6, maxWidth: 90 },
   podioXp: { fontSize: 12, color: '#E8A736', fontWeight: 'bold', marginTop: 2 },
-
   linha: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     backgroundColor: '#FFF', padding: 14, borderRadius: 12, marginBottom: 10,
