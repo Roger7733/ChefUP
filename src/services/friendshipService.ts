@@ -2,13 +2,13 @@ import { Friendship } from '@/models/Friendship';
 import { User } from '@/models/User';
 import { db } from '@/services/firebase';
 import {
-    addDoc,
-    collection,
-    doc,
-    getDocs,
-    query,
-    updateDoc,
-    where,
+  addDoc,
+  collection,
+  doc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
 } from 'firebase/firestore';
 
 // 1. Buscar usuários pelo nome (para achar quem adicionar)
@@ -68,4 +68,32 @@ export async function listarAmigos(meuId: string): Promise<Friendship[]> {
   snap2.forEach((d) => amizades.push({ id: d.id, ...d.data() } as Friendship));
 
   return amizades;
+}
+
+// 5. Listar os pedidos de amizade que EU recebi (pendentes)
+export async function listarPedidosRecebidos(meuId: string): Promise<Friendship[]> {
+  const q = query(
+    collection(db, 'friendships'),
+    where('status', '==', 'pending'),
+    where('userId2', '==', meuId)
+  );
+  const snapshot = await getDocs(q);
+
+  const pedidos: Friendship[] = [];
+  snapshot.forEach((d) => pedidos.push({ id: d.id, ...d.data() } as Friendship));
+  return pedidos;
+}
+
+// 6. Listar os pedidos que EU enviei (pendentes)
+export async function listarPedidosEnviados(meuId: string): Promise<Friendship[]> {
+  const q = query(
+    collection(db, 'friendships'),
+    where('status', '==', 'pending'),
+    where('userId1', '==', meuId)
+  );
+  const snapshot = await getDocs(q);
+
+  const pedidos: Friendship[] = [];
+  snapshot.forEach((d) => pedidos.push({ id: d.id, ...d.data() } as Friendship));
+  return pedidos;
 }
