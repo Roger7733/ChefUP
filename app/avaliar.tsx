@@ -30,6 +30,9 @@ export default function Avaliar() {
   const [publicando, setPublicando] = useState(false);
   const [publicado, setPublicado] = useState(false);
 
+  // prato recusado pela IA (nota 1 = não corresponde)
+  const invalido = resultado !== null && resultado.nota <= 1;
+
   async function escolherFoto() {
     const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissao.granted) {
@@ -58,9 +61,12 @@ export default function Avaliar() {
       const avaliacao = await avaliarPrato(base64!, faseNome || 'prato');
       setResultado(avaliacao);
 
-      const xp = calcularXpDaNota(xpBase, avaliacao.nota);
-      await completarFase(xp);
-      setXpGanho(xp);
+      // só recompensa se o prato foi aceito (nota > 1)
+      if (avaliacao.nota > 1) {
+        const xp = calcularXpDaNota(xpBase, avaliacao.nota);
+        await completarFase(xp);
+        setXpGanho(xp);
+      }
     } catch (erro: any) {
       Alert.alert('Erro', erro.message);
     } finally {
@@ -93,11 +99,10 @@ export default function Avaliar() {
     }
   }
 
-  // escolhe a cor da barra conforme a pontuação
   function corBarra(pontos: number): string {
-    if (pontos >= 80) return '#4F7239'; // verde
-    if (pontos >= 50) return '#E8A736'; // âmbar
-    return '#D63E2A'; // vermelho
+    if (pontos >= 80) return '#4F7239';
+    if (pontos >= 50) return '#E8A736';
+    return '#D63E2A';
   }
 
   return (
@@ -120,7 +125,17 @@ export default function Avaliar() {
         </View>
       )}
 
-      {resultado && (
+      {/* PRATO INVÁLIDO */}
+      {invalido && (
+        <View style={styles.invalidoBox}>
+          <Text style={styles.invalidoIcone}>🤔</Text>
+          <Text style={styles.invalidoTitulo}>Prato não reconhecido</Text>
+          <Text style={styles.invalidoTexto}>{resultado.feedback}</Text>
+        </View>
+      )}
+
+      {/* AVALIAÇÃO VÁLIDA */}
+      {resultado && !invalido && (
         <View style={styles.resultado}>
           <Text style={styles.estrelas}>{'⭐'.repeat(resultado.nota)}</Text>
           <Text style={styles.notaTexto}>Nota: {resultado.nota}/5</Text>
@@ -129,7 +144,6 @@ export default function Avaliar() {
             <Text style={styles.xp}>+{xpGanho} XP · +10 moedas 🎉</Text>
           )}
 
-          {/* Critérios com barras */}
           {resultado.criterios && resultado.criterios.length > 0 && (
             <View style={styles.criterios}>
               {resultado.criterios.map((c, i) => (
@@ -152,7 +166,6 @@ export default function Avaliar() {
             </View>
           )}
 
-          {/* Dica */}
           {resultado.dica ? (
             <View style={styles.dicaBox}>
               <Text style={styles.dicaTitulo}>💡 Para melhorar</Text>
@@ -162,7 +175,8 @@ export default function Avaliar() {
         </View>
       )}
 
-      {resultado && !publicado && (
+      {/* Publicar — só para avaliação válida e não publicada */}
+      {resultado && !invalido && !publicado && (
         <View style={styles.publicarBox}>
           <Text style={styles.publicarTitulo}>Compartilhar no feed?</Text>
           <TextInput
@@ -189,7 +203,17 @@ export default function Avaliar() {
 
       {publicado && <Text style={styles.publicadoMsg}>✓ Publicado no feed!</Text>}
 
-      {xpGanho !== null ? (
+      {/* BOTÕES DE AÇÃO */}
+      {invalido ? (
+        <>
+          <Pressable style={styles.botao} onPress={escolherFoto} disabled={processando}>
+            <Text style={styles.botaoTexto}>Enviar outra foto</Text>
+          </Pressable>
+          <Pressable style={styles.botaoSecundario} onPress={() => router.back()}>
+            <Text style={styles.botaoSecundarioTexto}>Voltar à trilha</Text>
+          </Pressable>
+        </>
+      ) : xpGanho !== null ? (
         <Pressable style={styles.botaoSecundario} onPress={() => router.back()}>
           <Text style={styles.botaoSecundarioTexto}>Voltar à trilha</Text>
         </Pressable>
@@ -215,6 +239,15 @@ const styles = StyleSheet.create({
   placeholderTexto: { color: '#999999' },
   processando: { alignItems: 'center', gap: 8 },
   processandoTexto: { color: '#D63E2A', fontWeight: 'bold' },
+
+  invalidoBox: {
+    width: '100%', backgroundColor: '#FBE3DD', padding: 24, borderRadius: 16,
+    alignItems: 'center', gap: 10, borderWidth: 1, borderColor: '#F5C6BA',
+  },
+  invalidoIcone: { fontSize: 40 },
+  invalidoTitulo: { fontSize: 18, fontWeight: 'bold', color: '#8B3A1F' },
+  invalidoTexto: { fontSize: 15, color: '#5c2b2e', textAlign: 'center', lineHeight: 21 },
+
   resultado: {
     alignItems: 'center', gap: 6, backgroundColor: '#FFFFFF',
     padding: 20, borderRadius: 16, borderWidth: 1, borderColor: '#FFD9C9',

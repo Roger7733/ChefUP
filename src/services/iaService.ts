@@ -47,29 +47,54 @@ export type ResultadoIA = {
   criterios: Criterio[];
 };
 
+// espera um número de milissegundos
+function esperar(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export async function avaliarPrato(base64: string, pratoEsperado: string): Promise<ResultadoIA> {
-  const resposta = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [
-        {
-          parts: [
-            { text: montarPrompt(pratoEsperado) },
-            { inline_data: { mime_type: 'image/jpeg', data: base64 } },
-          ],
-        },
-      ],
-    }),
-  });
+  const MAX_TENTATIVAS = 3;
 
-  const dados = await resposta.json();
+  for (let tentativa = 1; tentativa <= MAX_TENTATIVAS; tentativa++) {
+    const resposta = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { text: montarPrompt(pratoEsperado) },
+              { inline_data: { mime_type: 'image/jpeg', data: base64 } },
+            ],
+          },
+        ],
+      }),
+    });
 
-  if (!resposta.ok) {
-    throw new Error(dados.error?.message || 'Falha ao avaliar o prato');
+    const dados = await resposta.json();
+
+    if (resposta.ok) {
+      const textoResposta = dados.candidates[0].content.parts[0].text;
+      const textoLimpo = textoResposta.replace(/```json|```/g, '').trim();
+      return JSON.parse(textoLimpo) as ResultadoIA;
+    }
+
+    const mensagem = dados.error?.message || '';
+    const sobrecarga =
+      resposta.status === 503 ||
+      resposta.status === 429 ||
+      mensagem.toLowerCase().includes('demand') ||
+      mensagem.toLowerCase().includes('overloaded');
+
+    // se for sobrecarga e ainda há tentativas, espera e tenta de novo
+    if (sobrecarga && tentativa < MAX_TENTATIVAS) {
+      await esperar(2000 * tentativa); // espera 2s, depois 4s...
+      continue;
+    }
+
+    // erro que não é sobrecarga, ou acabaram as tentativas
+    throw new Error(mensagem || 'Falha ao avaliar o prato');
   }
 
-  const textoResposta = dados.candidates[0].content.parts[0].text;
-  const textoLimpo = textoResposta.replace(/```json|```/g, '').trim();
-  return JSON.parse(textoLimpo) as ResultadoIA;
+  throw new Error('O serviço está sobrecarregado. Tente novamente em alguns instantes.');
 }
