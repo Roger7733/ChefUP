@@ -9,17 +9,42 @@ O usuário deveria ter preparado o seguinte prato: "${pratoEsperado}".
 Analise a foto enviada seguindo estes passos:
 1. Verifique se a imagem realmente corresponde ao prato "${pratoEsperado}".
 2. Se a imagem NÃO corresponder ao prato esperado (for outro alimento, ou não for comida),
-   atribua nota 1 e no feedback explique gentilmente que a foto não corresponde ao prato solicitado.
-3. Se corresponder, avalie a apresentação, o empratamento e o aspecto geral,
-   sendo encorajador e didático, como um professor gentil com um aluno.
+   atribua nota 1, deixe todos os criterios com valor 0, e no feedback explique gentilmente
+   que a foto não corresponde ao prato solicitado.
+3. Se corresponder, avalie o prato de forma encorajadora e didática, como um professor gentil.
+   Dê uma nota de 1 a 5 estrelas para o conjunto, e avalie separadamente 4 critérios,
+   cada um com uma pontuação de 0 a 100 e um comentário curto e específico:
+   - "Apresentação" (empratamento, organização no prato)
+   - "Cor" (coloração, douramento, aparência apetitosa)
+   - "Técnica" (execução, cozimento, cortes)
+   - "Proporção" (equilíbrio das quantidades)
+   No campo "dica", dê UMA sugestão prática e específica para a próxima vez.
 
 Responda APENAS com um JSON válido, sem texto antes ou depois, neste formato exato:
-{"nota": <número de 1 a 5>, "feedback": "<uma frase curta e construtiva em português>"}`;
+{
+  "nota": <número de 1 a 5>,
+  "feedback": "<uma frase curta e encorajadora em português>",
+  "dica": "<uma sugestão prática para melhorar>",
+  "criterios": [
+    {"nome": "Apresentação", "pontos": <0 a 100>, "comentario": "<comentário curto>"},
+    {"nome": "Cor", "pontos": <0 a 100>, "comentario": "<comentário curto>"},
+    {"nome": "Técnica", "pontos": <0 a 100>, "comentario": "<comentário curto>"},
+    {"nome": "Proporção", "pontos": <0 a 100>, "comentario": "<comentário curto>"}
+  ]
+}`;
 }
+
+export type Criterio = {
+  nome: string;
+  pontos: number;
+  comentario: string;
+};
 
 export type ResultadoIA = {
   nota: number;
   feedback: string;
+  dica: string;
+  criterios: Criterio[];
 };
 
 export async function avaliarPrato(base64: string, pratoEsperado: string): Promise<ResultadoIA> {

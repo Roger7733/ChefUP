@@ -72,11 +72,7 @@ export default function Avaliar() {
     if (!foto || !resultado) return;
     try {
       setPublicando(true);
-
-      // 1. sobe a foto pro Cloudinary
       const photoUrl = await uploadFoto(foto);
-
-      // 2. monta e salva a avaliação
       await salvarAvaliacao({
         userId: meuId,
         userName: meuNome,
@@ -88,7 +84,6 @@ export default function Avaliar() {
         photoUrl: photoUrl,
         date: new Date().toISOString(),
       });
-
       setPublicado(true);
     } catch (erro: any) {
       console.log('ERRO AO PUBLICAR:', JSON.stringify(erro), erro?.message);
@@ -96,6 +91,13 @@ export default function Avaliar() {
     } finally {
       setPublicando(false);
     }
+  }
+
+  // escolhe a cor da barra conforme a pontuação
+  function corBarra(pontos: number): string {
+    if (pontos >= 80) return '#4F7239'; // verde
+    if (pontos >= 50) return '#E8A736'; // âmbar
+    return '#D63E2A'; // vermelho
   }
 
   return (
@@ -126,10 +128,40 @@ export default function Avaliar() {
           {xpGanho !== null && (
             <Text style={styles.xp}>+{xpGanho} XP · +10 moedas 🎉</Text>
           )}
+
+          {/* Critérios com barras */}
+          {resultado.criterios && resultado.criterios.length > 0 && (
+            <View style={styles.criterios}>
+              {resultado.criterios.map((c, i) => (
+                <View key={i} style={styles.criterioItem}>
+                  <View style={styles.criterioTopo}>
+                    <Text style={styles.criterioNome}>{c.nome}</Text>
+                    <Text style={styles.criterioPontos}>{c.pontos}</Text>
+                  </View>
+                  <View style={styles.barraFundo}>
+                    <View
+                      style={[
+                        styles.barraPreenchida,
+                        { width: `${c.pontos}%`, backgroundColor: corBarra(c.pontos) },
+                      ]}
+                    />
+                  </View>
+                  {c.comentario ? <Text style={styles.criterioComentario}>{c.comentario}</Text> : null}
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Dica */}
+          {resultado.dica ? (
+            <View style={styles.dicaBox}>
+              <Text style={styles.dicaTitulo}>💡 Para melhorar</Text>
+              <Text style={styles.dicaTexto}>{resultado.dica}</Text>
+            </View>
+          ) : null}
         </View>
       )}
 
-      {/* Seção de publicar — só aparece depois de avaliar e se ainda não publicou */}
       {resultado && !publicado && (
         <View style={styles.publicarBox}>
           <Text style={styles.publicarTitulo}>Compartilhar no feed?</Text>
@@ -155,9 +187,7 @@ export default function Avaliar() {
         </View>
       )}
 
-      {publicado && (
-        <Text style={styles.publicadoMsg}>✓ Publicado no feed!</Text>
-      )}
+      {publicado && <Text style={styles.publicadoMsg}>✓ Publicado no feed!</Text>}
 
       {xpGanho !== null ? (
         <Pressable style={styles.botaoSecundario} onPress={() => router.back()}>
@@ -194,6 +224,24 @@ const styles = StyleSheet.create({
   notaTexto: { fontSize: 18, fontWeight: 'bold', color: '#333333' },
   feedback: { fontSize: 15, color: '#666666', textAlign: 'center' },
   xp: { fontSize: 16, fontWeight: 'bold', color: '#4F7239', marginTop: 8 },
+
+  criterios: { width: '100%', gap: 14, marginTop: 12 },
+  criterioItem: { width: '100%', gap: 4 },
+  criterioTopo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  criterioNome: { fontSize: 14, fontWeight: 'bold', color: '#2A1A12' },
+  criterioPontos: { fontSize: 14, fontWeight: 'bold', color: '#9B8674' },
+  barraFundo: {
+    width: '100%', height: 8, borderRadius: 4, backgroundColor: '#F0EEE9', overflow: 'hidden',
+  },
+  barraPreenchida: { height: 8, borderRadius: 4 },
+  criterioComentario: { fontSize: 12, color: '#9B8674', fontStyle: 'italic' },
+
+  dicaBox: {
+    width: '100%', backgroundColor: '#FBE3DD', padding: 14, borderRadius: 12, gap: 4, marginTop: 8,
+  },
+  dicaTitulo: { fontSize: 14, fontWeight: 'bold', color: '#8B3A1F' },
+  dicaTexto: { fontSize: 14, color: '#5c2b2e' },
+
   publicarBox: {
     width: '100%', backgroundColor: '#FFFFFF', padding: 16, borderRadius: 16, gap: 12,
     borderWidth: 1, borderColor: '#F4ECD8',

@@ -11,19 +11,18 @@ import {
   where,
 } from 'firebase/firestore';
 
-// 1. Buscar usuários pelo nome (para achar quem adicionar)
+// 1. Buscar usuários pelo nome (traz todos e filtra no app: ignora maiúsculas e busca por "contém")
 export async function buscarUsuariosPorNome(termo: string, meuId: string): Promise<User[]> {
-  const q = query(
-    collection(db, 'users'),
-    where('name', '>=', termo),
-    where('name', '<=', termo + '\uf8ff')
-  );
-  const snapshot = await getDocs(q);
+  const termoLimpo = termo.trim().toLowerCase();
+  if (termoLimpo === '') return [];
+
+  const snapshot = await getDocs(collection(db, 'users'));
 
   const usuarios: User[] = [];
   snapshot.forEach((documento) => {
     const usuario = documento.data() as User;
-    if (usuario.id !== meuId) {
+    const nome = (usuario.name || '').toLowerCase();
+    if (usuario.id !== meuId && nome.includes(termoLimpo)) {
       usuarios.push(usuario);
     }
   });
