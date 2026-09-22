@@ -1,3 +1,4 @@
+import DicasFotoModal from '@/components/DicasFotoModal';
 import { salvarAvaliacao } from '@/services/evaluationService';
 import { avaliarPrato, ResultadoIA } from '@/services/iaService';
 import { uploadFoto } from '@/services/uploadService';
@@ -222,6 +223,7 @@ export default function Avaliar() {
           <Text style={styles.botaoTexto}>Escolher foto do prato</Text>
         </Pressable>
       )}
+      <DicasFotoModal />
     </ScrollView>
   );
 }
