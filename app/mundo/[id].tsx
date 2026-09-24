@@ -16,8 +16,12 @@ export default function MundoScreen() {
 
   useEffect(() => {
     async function carregar() {
-      const lista = await buscarFasesDoMundo(id);
-      setFases(lista);
+      try {
+        const lista = await buscarFasesDoMundo(id);
+        setFases(lista);
+      } catch (erro: any) {
+        console.log('ERRO AO CARREGAR FASES:', erro?.message);
+      }
     }
     carregar();
   }, [id]);
@@ -33,7 +37,7 @@ export default function MundoScreen() {
       <ScrollView contentContainerStyle={styles.trilha}>
         {fases.map((fase, indice) => (
           <View
-            key={fase.id}
+            key={`${fase.id}-${indice}`}
             style={[
               styles.faseWrapper,
               { alignItems: indice % 2 === 0 ? 'flex-start' : 'flex-end' },

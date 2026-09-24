@@ -23,6 +23,7 @@ export default function FeedView() {
       const amizades = await listarAmigos(meuId);
       const idsAmigos = amizades.map((a) => (a.userId1 === meuId ? a.userId2 : a.userId1));
       const todosIds = [meuId, ...idsAmigos];
+      console.log('FEED - meus ids buscados:', JSON.stringify(todosIds));
 
       // 2. busca as avaliações de todos eles
       const avaliacoes = await listarAvaliacoesDe(todosIds);

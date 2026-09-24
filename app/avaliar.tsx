@@ -1,8 +1,9 @@
 import DicasFotoModal from '@/components/DicasFotoModal';
 import { salvarAvaliacao } from '@/services/evaluationService';
 import { avaliarPrato, ResultadoIA } from '@/services/iaService';
+import { buscarProgresso, salvarProgresso } from '@/services/progressService';
 import { uploadFoto } from '@/services/uploadService';
-import { calcularXpDaNota } from '@/utils/levelSystem';
+import { calcularXpDaMelhoria } from '@/utils/levelSystem';
 import { useUserStore } from '@/viewmodels/userStore';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -26,12 +27,12 @@ export default function Avaliar() {
   const [processando, setProcessando] = useState(false);
   const [resultado, setResultado] = useState<ResultadoIA | null>(null);
   const [xpGanho, setXpGanho] = useState<number | null>(null);
+  const [jaDominava, setJaDominava] = useState(false);
 
   const [legenda, setLegenda] = useState('');
   const [publicando, setPublicando] = useState(false);
   const [publicado, setPublicado] = useState(false);
 
-  // prato recusado pela IA (nota 1 = não corresponde)
   const invalido = resultado !== null && resultado.nota <= 1;
 
   async function escolherFoto() {
@@ -54,6 +55,7 @@ export default function Avaliar() {
     setFoto(uriLocal);
     setResultado(null);
     setXpGanho(null);
+    setJaDominava(false);
     setPublicado(false);
     setLegenda('');
 
@@ -62,11 +64,27 @@ export default function Avaliar() {
       const avaliacao = await avaliarPrato(base64!, faseNome || 'prato');
       setResultado(avaliacao);
 
-      // só recompensa se o prato foi aceito (nota > 1)
+      // só processa recompensa se o prato foi aceito (nota > 1)
       if (avaliacao.nota > 1) {
-        const xp = calcularXpDaNota(xpBase, avaliacao.nota);
-        await completarFase(xp);
-        setXpGanho(xp);
+        // busca a melhor nota anterior nesta fase
+        const progressoAnterior = await buscarProgresso(meuId, faseId || '');
+        const melhorNotaAnterior = progressoAnterior ? progressoAnterior.bestStars : 0;
+
+        // calcula o XP só pela melhoria
+        const xp = calcularXpDaMelhoria(xpBase, avaliacao.nota, melhorNotaAnterior);
+
+        if (xp > 0) {
+          await completarFase(xp);
+          setXpGanho(xp);
+        } else {
+          // não melhorou — já dominava a fase
+          setJaDominava(true);
+        }
+
+        // atualiza o score se a nota nova for a melhor até agora
+        if (avaliacao.nota > melhorNotaAnterior) {
+          await salvarProgresso(meuId, faseId || '', avaliacao.nota);
+        }
       }
     } catch (erro: any) {
       Alert.alert('Erro', erro.message);
@@ -126,7 +144,6 @@ export default function Avaliar() {
         </View>
       )}
 
-      {/* PRATO INVÁLIDO */}
       {invalido && (
         <View style={styles.invalidoBox}>
           <Text style={styles.invalidoIcone}>🤔</Text>
@@ -135,7 +152,6 @@ export default function Avaliar() {
         </View>
       )}
 
-      {/* AVALIAÇÃO VÁLIDA */}
       {resultado && !invalido && (
         <View style={styles.resultado}>
           <Text style={styles.estrelas}>{'⭐'.repeat(resultado.nota)}</Text>
@@ -143,6 +159,9 @@ export default function Avaliar() {
           <Text style={styles.feedback}>{resultado.feedback}</Text>
           {xpGanho !== null && (
             <Text style={styles.xp}>+{xpGanho} XP · +10 moedas 🎉</Text>
+          )}
+          {jaDominava && (
+            <Text style={styles.dominava}>Você já domina esta fase! Sem XP extra desta vez. 👏</Text>
           )}
 
           {resultado.criterios && resultado.criterios.length > 0 && (
@@ -176,7 +195,6 @@ export default function Avaliar() {
         </View>
       )}
 
-      {/* Publicar — só para avaliação válida e não publicada */}
       {resultado && !invalido && !publicado && (
         <View style={styles.publicarBox}>
           <Text style={styles.publicarTitulo}>Compartilhar no feed?</Text>
@@ -204,7 +222,6 @@ export default function Avaliar() {
 
       {publicado && <Text style={styles.publicadoMsg}>✓ Publicado no feed!</Text>}
 
-      {/* BOTÕES DE AÇÃO */}
       {invalido ? (
         <>
           <Pressable style={styles.botao} onPress={escolherFoto} disabled={processando}>
@@ -214,7 +231,7 @@ export default function Avaliar() {
             <Text style={styles.botaoSecundarioTexto}>Voltar à trilha</Text>
           </Pressable>
         </>
-      ) : xpGanho !== null ? (
+      ) : resultado && !invalido ? (
         <Pressable style={styles.botaoSecundario} onPress={() => router.back()}>
           <Text style={styles.botaoSecundarioTexto}>Voltar à trilha</Text>
         </Pressable>
@@ -259,6 +276,7 @@ const styles = StyleSheet.create({
   notaTexto: { fontSize: 18, fontWeight: 'bold', color: '#333333' },
   feedback: { fontSize: 15, color: '#666666', textAlign: 'center' },
   xp: { fontSize: 16, fontWeight: 'bold', color: '#4F7239', marginTop: 8 },
+  dominava: { fontSize: 14, fontWeight: 'bold', color: '#9B8674', textAlign: 'center', marginTop: 8 },
 
   criterios: { width: '100%', gap: 14, marginTop: 12 },
   criterioItem: { width: '100%', gap: 4 },

@@ -74,9 +74,19 @@ export async function avaliarPrato(base64: string, pratoEsperado: string): Promi
     const dados = await resposta.json();
 
     if (resposta.ok) {
-      const textoResposta = dados.candidates[0].content.parts[0].text;
+      const textoResposta = dados?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (!textoResposta) {
+        throw new Error('A IA não retornou uma resposta. Tente novamente.');
+      }
+
       const textoLimpo = textoResposta.replace(/```json|```/g, '').trim();
-      return JSON.parse(textoLimpo) as ResultadoIA;
+
+      try {
+        return JSON.parse(textoLimpo) as ResultadoIA;
+      } catch {
+        throw new Error('Não consegui interpretar a avaliação. Tente enviar a foto novamente.');
+      }
     }
 
     const mensagem = dados.error?.message || '';
