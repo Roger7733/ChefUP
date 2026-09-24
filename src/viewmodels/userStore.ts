@@ -15,12 +15,15 @@ type UserState = {
   level: number;
   streak: number;
   lastAccess: string;
+  character: 'mulher' | 'homem';
+  outfit: 'normal' | 'premium';
   addCoins: (amount: number) => void;
   addXp: (amount: number) => void;
   setUsuario: (usuario: User) => void;
   completarFase: (rewardXp: number) => Promise<void>;
   registrarAcesso: () => Promise<void>;
   comprarItem: (itemId: string, preco: number) => Promise<boolean>;
+  mudarAparencia: (character: 'mulher' | 'homem', outfit: 'normal' | 'premium') => Promise<void>;
 };
 
 export const useUserStore = create<UserState>((set, get) => ({
@@ -32,6 +35,8 @@ export const useUserStore = create<UserState>((set, get) => ({
   level: 1,
   streak: 0,
   lastAccess: '',
+  character: 'mulher',
+  outfit: 'normal',
 
   addCoins: (amount) =>
     set((state) => ({ coins: state.coins + amount })),
@@ -49,6 +54,8 @@ export const useUserStore = create<UserState>((set, get) => ({
       level: usuario.level,
       streak: usuario.streak,
       lastAccess: usuario.lastAccess,
+      character: usuario.character || 'mulher',
+      outfit: usuario.outfit || 'normal',
     }),
 
   completarFase: async (rewardXp) => {
@@ -69,6 +76,8 @@ export const useUserStore = create<UserState>((set, get) => ({
       level: novoNivel,
       streak: estado.streak,
       lastAccess: estado.lastAccess,
+      character: estado.character,
+      outfit: estado.outfit,
     };
 
     await salvarUsuario(usuarioAtualizado);
@@ -91,41 +100,66 @@ export const useUserStore = create<UserState>((set, get) => ({
       level: estado.level,
       streak: novoStreak,
       lastAccess: hoje,
+      character: estado.character,
+      outfit: estado.outfit,
     };
 
     await salvarUsuario(usuarioAtualizado);
   },
 
   comprarItem: async (itemId, preco) => {
-  const estado = get();
+    const estado = get();
 
-  if (estado.coins < preco) {
-    return false;
-  }
+    if (estado.coins < preco) {
+      return false;
+    }
 
-  const novasMoedas = estado.coins - preco;
-  set({ coins: novasMoedas });
+    const novasMoedas = estado.coins - preco;
+    set({ coins: novasMoedas });
 
-  const usuarioAtualizado: User = {
-    id: estado.id,
-    name: estado.name,
-    email: estado.email,
-    coins: novasMoedas,
-    xp: estado.xp,
-    level: estado.level,
-    streak: estado.streak,
-    lastAccess: estado.lastAccess,
-  };
-  await salvarUsuario(usuarioAtualizado);
+    const usuarioAtualizado: User = {
+      id: estado.id,
+      name: estado.name,
+      email: estado.email,
+      coins: novasMoedas,
+      xp: estado.xp,
+      level: estado.level,
+      streak: estado.streak,
+      lastAccess: estado.lastAccess,
+      character: estado.character,
+      outfit: estado.outfit,
+    };
+    await salvarUsuario(usuarioAtualizado);
 
-  const novoUserItem: UserItem = {
-    id: `${estado.id}_${itemId}`,
-    userId: estado.id,
-    itemId: itemId,
-    equipped: false,
-  };
-  await registrarCompra(novoUserItem);
+    const novoUserItem: UserItem = {
+      id: `${estado.id}_${itemId}`,
+      userId: estado.id,
+      itemId: itemId,
+      equipped: false,
+    };
+    await registrarCompra(novoUserItem);
 
-  return true;
+    return true;
+  },
+
+  mudarAparencia: async (character, outfit) => {
+    const estado = get();
+
+    set({ character, outfit });
+
+    const usuarioAtualizado: User = {
+      id: estado.id,
+      name: estado.name,
+      email: estado.email,
+      coins: estado.coins,
+      xp: estado.xp,
+      level: estado.level,
+      streak: estado.streak,
+      lastAccess: estado.lastAccess,
+      character: character,
+      outfit: outfit,
+    };
+
+    await salvarUsuario(usuarioAtualizado);
   },
 }));

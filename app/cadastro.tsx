@@ -29,6 +29,8 @@ export default function Cadastro() {
         coins: 0,
         streak: 0,
         lastAccess: new Date().toISOString(),
+        character: 'mulher',
+        outfit: 'normal',
       };
 
       await salvarUsuario(novoUsuario);

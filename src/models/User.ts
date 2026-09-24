@@ -7,4 +7,6 @@ export interface User {
     coins: number;
     streak: number;
     lastAccess: string;
+    character: 'mulher' | 'homem';
+    outfit: 'normal' | 'premium';
 }

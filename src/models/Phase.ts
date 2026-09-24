@@ -4,5 +4,6 @@ export interface Phase {
     name: string;
     type: 'recipe' | 'technique';
     difficulty: 'easy' | 'medium' | 'hard';
-    rewardXp: number; 
+    rewardXp: number;
+    order: number;
 }

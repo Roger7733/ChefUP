@@ -1,3 +1,5 @@
+import Avatar from '@/components/Avatar';
+import Personalizar from '@/components/Personalizar';
 import { sair } from '@/services/authService';
 import { useUserStore } from '@/viewmodels/userStore';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -21,11 +23,16 @@ export default function Perfil() {
   return (
     <View style={styles.screen}>
       <Text style={styles.title}>Meu Perfil</Text>
+
+      <Avatar />
+
       {name ? <Text style={styles.nome}>{name}</Text> : null}
       <Text style={styles.streak}>🔥 {streak} {streak === 1 ? 'dia' : 'dias'}</Text>
       <Text style={styles.info}>Nível: {level}</Text>
       <Text style={styles.info}>XP: {xp}</Text>
       <Text style={styles.info}>Moedas: {coins}</Text>
+
+      <Personalizar />
 
       <Pressable style={styles.botaoSair} onPress={handleSair}>
         <Text style={styles.botaoSairTexto}>Sair da conta</Text>
