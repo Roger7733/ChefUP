@@ -9,6 +9,6 @@ export async function buscarFasesDoMundo(worldId: string): Promise<Phase[]> {
     orderBy('order')
   );
   const snapshot = await getDocs(q);
-  const fases = snapshot.docs.map((doc) => doc.data() as Phase);
+  const fases = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Phase);
   return fases;
 }
