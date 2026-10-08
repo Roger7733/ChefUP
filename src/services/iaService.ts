@@ -2,18 +2,33 @@ const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 const GEMINI_URL =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent';
 
-function montarPrompt(pratoEsperado: string): string {
+function montarPrompt(pratoEsperado: string, ingredientesEsperados: string[]): string {
+  const temIngredientes = ingredientesEsperados.length > 0;
+  const listaIngredientes = ingredientesEsperados.join(', ');
+
   return `Você é um chef avaliador do aplicativo ChefUP, um jogo de culinária.
 O usuário deveria ter preparado o seguinte prato: "${pratoEsperado}".
+${
+  temIngredientes
+    ? `\nEste prato é definido por estes ingredientes/elementos: ${listaIngredientes}.
+Um prato BEM executado mostra sinais visíveis desses ingredientes (ex: alho dourado, brilho do azeite, cor do molho, ervas e temperos por cima).`
+    : ''
+}
 
-Analise a foto enviada seguindo estes passos:
-1. Verifique se a imagem realmente corresponde ao prato "${pratoEsperado}".
-2. Se a imagem NÃO corresponder ao prato esperado (for outro alimento, ou não for comida),
-   atribua nota 1, deixe todos os criterios com valor 0, e no feedback explique gentilmente
-   que a foto não corresponde ao prato solicitado.
-3. Se corresponder, avalie o prato de forma encorajadora e didática, como um professor gentil.
-   Dê uma nota de 1 a 5 estrelas para o conjunto, e avalie separadamente 4 critérios,
-   cada um com uma pontuação de 0 a 100 e um comentário curto e específico:
+Analise a foto enviada seguindo estes passos, NESTA ordem:
+
+1. CORRESPONDÊNCIA: Verifique se a imagem é realmente o prato "${pratoEsperado}" (ou ao menos a mesma categoria de alimento).
+   - Se NÃO for (for outro alimento, ou não for comida): atribua nota 1, deixe TODOS os criterios com pontos 0,
+     e no feedback explique gentilmente que a foto não corresponde ao prato solicitado. PARE por aqui.
+
+2. COMPLETUDE (seja RIGOROSO): Verifique se o prato está COMPLETO, ou seja, se os ingredientes/elementos que o definem aparecem na foto.
+   - Se o prato estiver claramente INCOMPLETO — por exemplo, apenas o ingrediente base (como massa cozida pura, sem molho, sem alho, sem azeite e sem nenhum tempero visível) quando a receita pede esses elementos — a nota NÃO pode passar de 2.
+   - Nesse caso, no feedback e na dica diga de forma clara e gentil O QUE ESTÁ FALTANDO (ex: "faltou o alho dourado e a salsinha").
+   - NÃO dê notas altas (4 ou 5) só porque o alimento é da categoria certa. Notas altas exigem um prato COMPLETO e bem executado.
+
+3. AVALIAÇÃO: Se o prato corresponde e está razoavelmente completo, avalie de forma encorajadora e didática, como um professor gentil.
+   Dê uma nota de 1 a 5 estrelas para o conjunto e avalie 5 critérios, cada um com pontuação de 0 a 100 e um comentário curto e específico:
+   - "Completude" (os ingredientes principais aparecem? o prato está inteiro?)
    - "Apresentação" (empratamento, organização no prato)
    - "Cor" (coloração, douramento, aparência apetitosa)
    - "Técnica" (execução, cozimento, cortes)
@@ -26,6 +41,7 @@ Responda APENAS com um JSON válido, sem texto antes ou depois, neste formato ex
   "feedback": "<uma frase curta e encorajadora em português>",
   "dica": "<uma sugestão prática para melhorar>",
   "criterios": [
+    {"nome": "Completude", "pontos": <0 a 100>, "comentario": "<comentário curto>"},
     {"nome": "Apresentação", "pontos": <0 a 100>, "comentario": "<comentário curto>"},
     {"nome": "Cor", "pontos": <0 a 100>, "comentario": "<comentário curto>"},
     {"nome": "Técnica", "pontos": <0 a 100>, "comentario": "<comentário curto>"},
@@ -52,7 +68,11 @@ function esperar(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function avaliarPrato(base64: string, pratoEsperado: string): Promise<ResultadoIA> {
+export async function avaliarPrato(
+  base64: string,
+  pratoEsperado: string,
+  ingredientesEsperados: string[] = []
+): Promise<ResultadoIA> {
   const MAX_TENTATIVAS = 3;
 
   for (let tentativa = 1; tentativa <= MAX_TENTATIVAS; tentativa++) {
@@ -63,7 +83,7 @@ export async function avaliarPrato(base64: string, pratoEsperado: string): Promi
         contents: [
           {
             parts: [
-              { text: montarPrompt(pratoEsperado) },
+              { text: montarPrompt(pratoEsperado, ingredientesEsperados) },
               { inline_data: { mime_type: 'image/jpeg', data: base64 } },
             ],
           },

@@ -5,7 +5,7 @@ import { collection, doc, getDocs, query, setDoc, where } from 'firebase/firesto
 
 export async function buscarItens(): Promise<Item[]> {
   const snapshot = await getDocs(collection(db, 'items'));
-  return snapshot.docs.map((doc) => doc.data() as Item);
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Item);
 }
 
 export async function buscarInventario(userId: string): Promise<UserItem[]> {

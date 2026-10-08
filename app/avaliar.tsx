@@ -1,4 +1,5 @@
 import DicasFotoModal from '@/components/DicasFotoModal';
+import { CONTEUDO_FASES } from '@/data/faseConteudo';
 import { salvarAvaliacao } from '@/services/evaluationService';
 import { avaliarPrato, ResultadoIA } from '@/services/iaService';
 import { buscarProgresso, salvarProgresso } from '@/services/progressService';
@@ -61,7 +62,10 @@ export default function Avaliar() {
 
     try {
       setProcessando(true);
-      const avaliacao = await avaliarPrato(base64!, faseNome || 'prato');
+      // pega os ingredientes esperados desta fase (se houver conteúdo cadastrado)
+      const conteudo = CONTEUDO_FASES[faseId || ''];
+      const ingredientesEsperados = conteudo ? conteudo.ingredientes.map((i) => i.nome) : [];
+      const avaliacao = await avaliarPrato(base64!, faseNome || 'prato', ingredientesEsperados);
       setResultado(avaliacao);
 
       // só processa recompensa se o prato foi aceito (nota > 1)

@@ -9,4 +9,5 @@ export interface User {
     lastAccess: string;
     character: 'mulher' | 'homem';
     outfit: 'normal' | 'premium';
+    equippedHat?: 'nenhum' | 'toque' | 'boina' | 'bandana';
 }

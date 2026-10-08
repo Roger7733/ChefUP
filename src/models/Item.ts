@@ -4,4 +4,5 @@ export interface Item {
     category: string;
     price: number;
     minLevel: number;
+    avatarHat: 'nenhum' | 'toque' | 'boina' | 'bandana';
 }

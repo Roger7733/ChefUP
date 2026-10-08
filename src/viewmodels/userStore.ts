@@ -6,6 +6,8 @@ import { calcularNivel } from '@/utils/levelSystem';
 import { calcularStreak } from '@/utils/streakSystem';
 import { create } from 'zustand';
 
+type Chapeu = 'nenhum' | 'toque' | 'boina' | 'bandana';
+
 type UserState = {
   id: string;
   name: string;
@@ -17,6 +19,7 @@ type UserState = {
   lastAccess: string;
   character: 'mulher' | 'homem';
   outfit: 'normal' | 'premium';
+  equippedHat: Chapeu;
   addCoins: (amount: number) => void;
   addXp: (amount: number) => void;
   setUsuario: (usuario: User) => void;
@@ -24,6 +27,7 @@ type UserState = {
   registrarAcesso: () => Promise<void>;
   comprarItem: (itemId: string, preco: number) => Promise<boolean>;
   mudarAparencia: (character: 'mulher' | 'homem', outfit: 'normal' | 'premium') => Promise<void>;
+  equiparChapeu: (hat: Chapeu) => Promise<void>;
 };
 
 export const useUserStore = create<UserState>((set, get) => ({
@@ -37,6 +41,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   lastAccess: '',
   character: 'mulher',
   outfit: 'normal',
+  equippedHat: 'toque',
 
   addCoins: (amount) =>
     set((state) => ({ coins: state.coins + amount })),
@@ -56,6 +61,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       lastAccess: usuario.lastAccess,
       character: usuario.character || 'mulher',
       outfit: usuario.outfit || 'normal',
+      equippedHat: usuario.equippedHat || 'toque',
     }),
 
   completarFase: async (rewardXp) => {
@@ -78,6 +84,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       lastAccess: estado.lastAccess,
       character: estado.character,
       outfit: estado.outfit,
+      equippedHat: estado.equippedHat,
     };
 
     await salvarUsuario(usuarioAtualizado);
@@ -102,6 +109,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       lastAccess: hoje,
       character: estado.character,
       outfit: estado.outfit,
+      equippedHat: estado.equippedHat,
     };
 
     await salvarUsuario(usuarioAtualizado);
@@ -128,6 +136,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       lastAccess: estado.lastAccess,
       character: estado.character,
       outfit: estado.outfit,
+      equippedHat: estado.equippedHat,
     };
     await salvarUsuario(usuarioAtualizado);
 
@@ -158,6 +167,29 @@ export const useUserStore = create<UserState>((set, get) => ({
       lastAccess: estado.lastAccess,
       character: character,
       outfit: outfit,
+      equippedHat: estado.equippedHat,
+    };
+
+    await salvarUsuario(usuarioAtualizado);
+  },
+
+  equiparChapeu: async (hat) => {
+    const estado = get();
+
+    set({ equippedHat: hat });
+
+    const usuarioAtualizado: User = {
+      id: estado.id,
+      name: estado.name,
+      email: estado.email,
+      coins: estado.coins,
+      xp: estado.xp,
+      level: estado.level,
+      streak: estado.streak,
+      lastAccess: estado.lastAccess,
+      character: estado.character,
+      outfit: estado.outfit,
+      equippedHat: hat,
     };
 
     await salvarUsuario(usuarioAtualizado);
