@@ -9,4 +9,7 @@ export interface Evaluation {
     caption: string;
     photoUrl: string;
     date: string;
+    likedBy?: string[];
+    avatarHat?: string;
+    avatarColor?: string;
 }

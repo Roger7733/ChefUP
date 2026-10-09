@@ -23,6 +23,8 @@ export default function Avaliar() {
   const meuId = useUserStore((state) => state.id);
   const meuNome = useUserStore((state) => state.name);
   const completarFase = useUserStore((state) => state.completarFase);
+  const equippedHat = useUserStore((state) => state.equippedHat);
+  const avatarColor = useUserStore((state) => state.avatarColor);
 
   const [foto, setFoto] = useState<string | null>(null);
   const [processando, setProcessando] = useState(false);
@@ -112,6 +114,8 @@ export default function Avaliar() {
         caption: legenda.trim(),
         photoUrl: photoUrl,
         date: new Date().toISOString(),
+        avatarHat: equippedHat,
+        avatarColor: avatarColor,
       });
       setPublicado(true);
     } catch (erro: any) {

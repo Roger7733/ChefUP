@@ -13,6 +13,8 @@ const ABAS: { key: Aba; label: string }[] = [
   { key: 'utensilio', label: 'Utensílios' },
 ];
 
+const CORES = ['#C0392B', '#4F7239', '#2C6E7F', '#5B3A57', '#B9770E', '#334155'];
+
 export default function Loja() {
   const [itens, setItens] = useState<Item[]>([]);
   const [comprados, setComprados] = useState<string[]>([]);
@@ -24,19 +26,18 @@ export default function Loja() {
   const level = useUserStore((s) => s.level);
   const userId = useUserStore((s) => s.id);
   const equippedHat = useUserStore((s) => s.equippedHat);
+  const avatarColor = useUserStore((s) => s.avatarColor);
   const comprarItem = useUserStore((s) => s.comprarItem);
   const equiparChapeu = useUserStore((s) => s.equiparChapeu);
+  const escolherCor = useUserStore((s) => s.escolherCor);
 
   useEffect(() => {
     async function carregar() {
       try {
         const listaItens = await buscarItens();
         setItens(listaItens);
-
         const inventario = await buscarInventario(userId);
         setComprados(inventario.map((ui) => ui.itemId));
-
-        // começa mostrando o chapéu equipado na prévia
         const equipadoItem = listaItens.find((i) => i.category === 'chapeu' && i.avatarHat === equippedHat);
         setSelecionado(equipadoItem ?? listaItens.find((i) => i.category === 'chapeu') ?? null);
       } finally {
@@ -62,39 +63,11 @@ export default function Loja() {
     const bloqueado = level < item.minLevel;
     const podePagar = coins >= item.price;
 
-    if (equipado) {
-      return (
-        <View style={[styles.botao, styles.botaoEquipado]}>
-          <Text style={styles.botaoTextoClaro}>Equipado</Text>
-        </View>
-      );
-    }
-    if (bloqueado) {
-      return (
-        <View style={[styles.botao, styles.botaoBloqueado]}>
-          <Text style={styles.botaoTextoEscuro}>🔒 Nível {item.minLevel}</Text>
-        </View>
-      );
-    }
-    if (possui) {
-      return (
-        <Pressable style={[styles.botao, styles.botaoEquipar]} onPress={() => equiparChapeu(item.avatarHat)}>
-          <Text style={styles.botaoTextoClaro}>Equipar</Text>
-        </Pressable>
-      );
-    }
-    if (podePagar) {
-      return (
-        <Pressable style={[styles.botao, styles.botaoComprar]} onPress={() => handleComprar(item)}>
-          <Text style={styles.botaoTextoClaro}>Comprar</Text>
-        </Pressable>
-      );
-    }
-    return (
-      <View style={[styles.botao, styles.botaoBloqueado]}>
-        <Text style={styles.botaoTextoEscuro}>Faltam moedas</Text>
-      </View>
-    );
+    if (equipado) return <View style={[styles.botao, styles.botaoEquipado]}><Text style={styles.botaoTextoClaro}>Equipado</Text></View>;
+    if (bloqueado) return <View style={[styles.botao, styles.botaoBloqueado]}><Text style={styles.botaoTextoEscuro}>🔒 Nível {item.minLevel}</Text></View>;
+    if (possui) return <Pressable style={[styles.botao, styles.botaoEquipar]} onPress={() => equiparChapeu(item.avatarHat)}><Text style={styles.botaoTextoClaro}>Equipar</Text></Pressable>;
+    if (podePagar) return <Pressable style={[styles.botao, styles.botaoComprar]} onPress={() => handleComprar(item)}><Text style={styles.botaoTextoClaro}>Comprar</Text></Pressable>;
+    return <View style={[styles.botao, styles.botaoBloqueado]}><Text style={styles.botaoTextoEscuro}>Faltam moedas</Text></View>;
   }
 
   const itensAba = itens.filter((i) => i.category === aba);
@@ -124,16 +97,26 @@ export default function Loja() {
             </View>
             <Avatar size={110} hat={selecionado?.avatarHat} />
           </View>
+
+          {/* cor do fundo */}
+          <View style={styles.corSecao}>
+            <Text style={styles.corLabel}>Cor do fundo</Text>
+            <View style={styles.cores}>
+              {CORES.map((c) => (
+                <Pressable
+                  key={c}
+                  onPress={() => escolherCor(c)}
+                  style={[styles.corBolinha, { backgroundColor: c }, avatarColor === c && styles.corSelecionada]}
+                />
+              ))}
+            </View>
+          </View>
         </View>
 
         {/* abas */}
         <View style={styles.tabs}>
           {ABAS.map((t) => (
-            <Pressable
-              key={t.key}
-              style={[styles.tab, aba === t.key && styles.tabAtiva]}
-              onPress={() => setAba(t.key)}
-            >
+            <Pressable key={t.key} style={[styles.tab, aba === t.key && styles.tabAtiva]} onPress={() => setAba(t.key)}>
               <Text style={[styles.tabTexto, aba === t.key && styles.tabTextoAtiva]}>{t.label}</Text>
             </Pressable>
           ))}
@@ -152,17 +135,11 @@ export default function Loja() {
               const equipado = item.avatarHat === equippedHat;
               const sel = selecionado?.id === item.id;
               return (
-                <Pressable
-                  key={item.id}
-                  style={[styles.card, sel && styles.cardSelecionado]}
-                  onPress={() => setSelecionado(item)}
-                >
+                <Pressable key={item.id} style={[styles.card, sel && styles.cardSelecionado]} onPress={() => setSelecionado(item)}>
                   <Avatar size={56} hat={item.avatarHat} />
                   <Text style={styles.cardNome}>{item.name}</Text>
-                  <Text style={styles.cardPreco}>
-                    {item.price === 0 ? 'Grátis' : `🪙 ${item.price}`}
-                  </Text>
-                  {equipado && <Text style={styles.badge}>✓ Equipado</Text>}
+                  <Text style={styles.cardPreco}>{item.price === 0 ? 'Grátis' : `🪙 ${item.price}`}</Text>
+                  {equipado && <Text style={styles.badge}>Equipado</Text>}
                 </Pressable>
               );
             })}
@@ -175,10 +152,7 @@ export default function Loja() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#FBF6EC' },
-  header: {
-    paddingTop: 60, paddingHorizontal: 20, paddingBottom: 12,
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-  },
+  header: { paddingTop: 60, paddingHorizontal: 20, paddingBottom: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   titulo: { fontSize: 26, fontWeight: 'bold', color: '#2A1A12' },
   moedasPill: { backgroundColor: '#FFF3D6', paddingVertical: 6, paddingHorizontal: 14, borderRadius: 20 },
   moedasTexto: { fontSize: 15, fontWeight: 'bold', color: '#A9761A' },
@@ -191,20 +165,20 @@ const styles = StyleSheet.create({
   previewNome: { fontSize: 18, fontWeight: 'bold', color: '#2A1A12' },
   previewPreco: { fontSize: 14, fontWeight: '600', color: '#A9761A' },
 
+  corSecao: { marginTop: 16, gap: 8 },
+  corLabel: { fontSize: 12, fontWeight: 'bold', color: '#9B8674' },
+  cores: { flexDirection: 'row', gap: 10 },
+  corBolinha: { width: 30, height: 30, borderRadius: 15, borderWidth: 2, borderColor: 'transparent' },
+  corSelecionada: { borderColor: '#2A1A12' },
+
   tabs: { flexDirection: 'row', gap: 8 },
-  tab: {
-    flex: 1, paddingVertical: 10, borderRadius: 20, backgroundColor: '#FFFFFF',
-    alignItems: 'center', borderWidth: 1, borderColor: '#F0E6D2',
-  },
+  tab: { flex: 1, paddingVertical: 10, borderRadius: 20, backgroundColor: '#FFFFFF', alignItems: 'center', borderWidth: 1, borderColor: '#F0E6D2' },
   tabAtiva: { backgroundColor: '#2A1A12', borderColor: '#2A1A12' },
   tabTexto: { fontSize: 13, fontWeight: 'bold', color: '#9B8674' },
   tabTextoAtiva: { color: '#FFFFFF' },
 
   grade: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  card: {
-    width: '47%', backgroundColor: '#FFFFFF', borderRadius: 16, padding: 12,
-    alignItems: 'center', gap: 4, borderWidth: 1, borderColor: '#F0E6D2',
-  },
+  card: { width: '47%', backgroundColor: '#FFFFFF', borderRadius: 16, padding: 12, alignItems: 'center', gap: 4, borderWidth: 1, borderColor: '#F0E6D2' },
   cardSelecionado: { borderColor: '#D63E2A', borderWidth: 2 },
   cardNome: { fontSize: 13, fontWeight: 'bold', color: '#2A1A12', textAlign: 'center' },
   cardPreco: { fontSize: 12, fontWeight: '600', color: '#A9761A' },

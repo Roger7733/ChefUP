@@ -10,4 +10,5 @@ export interface User {
     character: 'mulher' | 'homem';
     outfit: 'normal' | 'premium';
     equippedHat?: 'nenhum' | 'toque' | 'boina' | 'bandana';
+    avatarColor?: string;
 }

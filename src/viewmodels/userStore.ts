@@ -20,6 +20,7 @@ type UserState = {
   character: 'mulher' | 'homem';
   outfit: 'normal' | 'premium';
   equippedHat: Chapeu;
+  avatarColor: string;
   addCoins: (amount: number) => void;
   addXp: (amount: number) => void;
   setUsuario: (usuario: User) => void;
@@ -28,6 +29,7 @@ type UserState = {
   comprarItem: (itemId: string, preco: number) => Promise<boolean>;
   mudarAparencia: (character: 'mulher' | 'homem', outfit: 'normal' | 'premium') => Promise<void>;
   equiparChapeu: (hat: Chapeu) => Promise<void>;
+  escolherCor: (cor: string) => Promise<void>;
 };
 
 export const useUserStore = create<UserState>((set, get) => ({
@@ -42,12 +44,11 @@ export const useUserStore = create<UserState>((set, get) => ({
   character: 'mulher',
   outfit: 'normal',
   equippedHat: 'toque',
+  avatarColor: '#C0392B',
 
-  addCoins: (amount) =>
-    set((state) => ({ coins: state.coins + amount })),
+  addCoins: (amount) => set((state) => ({ coins: state.coins + amount })),
 
-  addXp: (amount) =>
-    set((state) => ({ xp: state.xp + amount })),
+  addXp: (amount) => set((state) => ({ xp: state.xp + amount })),
 
   setUsuario: (usuario) =>
     set({
@@ -62,81 +63,55 @@ export const useUserStore = create<UserState>((set, get) => ({
       character: usuario.character || 'mulher',
       outfit: usuario.outfit || 'normal',
       equippedHat: usuario.equippedHat || 'toque',
+      avatarColor: usuario.avatarColor || '#C0392B',
     }),
 
   completarFase: async (rewardXp) => {
     const estado = get();
-
     const novoXp = estado.xp + rewardXp;
     const novasMoedas = estado.coins + 10;
     const novoNivel = calcularNivel(novoXp);
-
     set({ xp: novoXp, coins: novasMoedas, level: novoNivel });
 
     const usuarioAtualizado: User = {
-      id: estado.id,
-      name: estado.name,
-      email: estado.email,
-      coins: novasMoedas,
-      xp: novoXp,
-      level: novoNivel,
-      streak: estado.streak,
-      lastAccess: estado.lastAccess,
-      character: estado.character,
-      outfit: estado.outfit,
-      equippedHat: estado.equippedHat,
+      id: estado.id, name: estado.name, email: estado.email,
+      coins: novasMoedas, xp: novoXp, level: novoNivel,
+      streak: estado.streak, lastAccess: estado.lastAccess,
+      character: estado.character, outfit: estado.outfit,
+      equippedHat: estado.equippedHat, avatarColor: estado.avatarColor,
     };
-
     await salvarUsuario(usuarioAtualizado);
   },
 
   registrarAcesso: async () => {
     const estado = get();
-
     const novoStreak = calcularStreak(estado.streak, estado.lastAccess);
     const hoje = new Date().toISOString();
-
     set({ streak: novoStreak, lastAccess: hoje });
 
     const usuarioAtualizado: User = {
-      id: estado.id,
-      name: estado.name,
-      email: estado.email,
-      coins: estado.coins,
-      xp: estado.xp,
-      level: estado.level,
-      streak: novoStreak,
-      lastAccess: hoje,
-      character: estado.character,
-      outfit: estado.outfit,
-      equippedHat: estado.equippedHat,
+      id: estado.id, name: estado.name, email: estado.email,
+      coins: estado.coins, xp: estado.xp, level: estado.level,
+      streak: novoStreak, lastAccess: hoje,
+      character: estado.character, outfit: estado.outfit,
+      equippedHat: estado.equippedHat, avatarColor: estado.avatarColor,
     };
-
     await salvarUsuario(usuarioAtualizado);
   },
 
   comprarItem: async (itemId, preco) => {
     const estado = get();
-
-    if (estado.coins < preco) {
-      return false;
-    }
+    if (estado.coins < preco) return false;
 
     const novasMoedas = estado.coins - preco;
     set({ coins: novasMoedas });
 
     const usuarioAtualizado: User = {
-      id: estado.id,
-      name: estado.name,
-      email: estado.email,
-      coins: novasMoedas,
-      xp: estado.xp,
-      level: estado.level,
-      streak: estado.streak,
-      lastAccess: estado.lastAccess,
-      character: estado.character,
-      outfit: estado.outfit,
-      equippedHat: estado.equippedHat,
+      id: estado.id, name: estado.name, email: estado.email,
+      coins: novasMoedas, xp: estado.xp, level: estado.level,
+      streak: estado.streak, lastAccess: estado.lastAccess,
+      character: estado.character, outfit: estado.outfit,
+      equippedHat: estado.equippedHat, avatarColor: estado.avatarColor,
     };
     await salvarUsuario(usuarioAtualizado);
 
@@ -147,51 +122,48 @@ export const useUserStore = create<UserState>((set, get) => ({
       equipped: false,
     };
     await registrarCompra(novoUserItem);
-
     return true;
   },
 
   mudarAparencia: async (character, outfit) => {
     const estado = get();
-
     set({ character, outfit });
 
     const usuarioAtualizado: User = {
-      id: estado.id,
-      name: estado.name,
-      email: estado.email,
-      coins: estado.coins,
-      xp: estado.xp,
-      level: estado.level,
-      streak: estado.streak,
-      lastAccess: estado.lastAccess,
-      character: character,
-      outfit: outfit,
-      equippedHat: estado.equippedHat,
+      id: estado.id, name: estado.name, email: estado.email,
+      coins: estado.coins, xp: estado.xp, level: estado.level,
+      streak: estado.streak, lastAccess: estado.lastAccess,
+      character: character, outfit: outfit,
+      equippedHat: estado.equippedHat, avatarColor: estado.avatarColor,
     };
-
     await salvarUsuario(usuarioAtualizado);
   },
 
   equiparChapeu: async (hat) => {
     const estado = get();
-
     set({ equippedHat: hat });
 
     const usuarioAtualizado: User = {
-      id: estado.id,
-      name: estado.name,
-      email: estado.email,
-      coins: estado.coins,
-      xp: estado.xp,
-      level: estado.level,
-      streak: estado.streak,
-      lastAccess: estado.lastAccess,
-      character: estado.character,
-      outfit: estado.outfit,
-      equippedHat: hat,
+      id: estado.id, name: estado.name, email: estado.email,
+      coins: estado.coins, xp: estado.xp, level: estado.level,
+      streak: estado.streak, lastAccess: estado.lastAccess,
+      character: estado.character, outfit: estado.outfit,
+      equippedHat: hat, avatarColor: estado.avatarColor,
     };
+    await salvarUsuario(usuarioAtualizado);
+  },
 
+  escolherCor: async (cor) => {
+    const estado = get();
+    set({ avatarColor: cor });
+
+    const usuarioAtualizado: User = {
+      id: estado.id, name: estado.name, email: estado.email,
+      coins: estado.coins, xp: estado.xp, level: estado.level,
+      streak: estado.streak, lastAccess: estado.lastAccess,
+      character: estado.character, outfit: estado.outfit,
+      equippedHat: estado.equippedHat, avatarColor: cor,
+    };
     await salvarUsuario(usuarioAtualizado);
   },
 }));

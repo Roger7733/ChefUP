@@ -20,15 +20,17 @@ export default function Avatar({
   hat,
   ring = false,
   ringColor = '#E8A736',
-  circleColor = '#C0392B',
+  circleColor,
   skin = '#D29B6E',
   hair = '#2A2320',
 }: Props) {
-  const outfitStore = useUserStore((state) => state.outfit);
-  const hatStore = useUserStore((state) => state.equippedHat);
+  const outfitStore = useUserStore((s) => s.outfit);
+  const hatStore = useUserStore((s) => s.equippedHat);
+  const corStore = useUserStore((s) => s.avatarColor);
 
   const look = outfit || outfitStore || 'normal';
   const chapeu = hat || hatStore || 'toque';
+  const cor = circleColor || corStore || '#C0392B';
   const premium = look === 'premium';
   const temAnel = premium || ring;
   const rInterno = temAnel ? 46 : 50;
@@ -42,37 +44,20 @@ export default function Avatar({
       </Defs>
 
       {temAnel && <Circle cx="50" cy="50" r="50" fill={ringColor} />}
-      <Circle cx="50" cy="50" r={rInterno} fill={circleColor} />
+      <Circle cx="50" cy="50" r={rInterno} fill={cor} />
 
       <G clipPath="url(#avatarClip)">
-        {/* pescoço */}
         <Rect x="42" y="62" width="16" height="22" rx="6" fill={skin} />
-
-        {/* jaleco */}
         <Ellipse cx="50" cy="102" rx="31" ry="25" fill="#FFFFFF" />
         <Path d="M44 86 Q50 94 56 86" stroke="#E2D8C8" strokeWidth="2" strokeLinecap="round" fill="none" />
-
-        {/* cabeça */}
         <Circle cx="50" cy="52" r="20" fill={skin} stroke="#B5824F" strokeWidth="1.3" />
-
-        {/* cabelo (corte curto masculino) */}
-        <Path
-          d="M30 54 C29 40 36 32 50 32 C64 32 71 40 70 54 C67 48 61 45 55 46 C52 48 50 49 50 49 C50 49 48 48 45 46 C39 45 33 48 30 54 Z"
-          fill={hair}
-        />
-
-        {/* bochechas */}
+        <Path d="M30 54 C29 40 36 32 50 32 C64 32 71 40 70 54 C67 48 61 45 55 46 C52 48 50 49 50 49 C50 49 48 48 45 46 C39 45 33 48 30 54 Z" fill={hair} />
         <Circle cx="40" cy="58" r="3.2" fill="#E8846B" opacity="0.45" />
         <Circle cx="60" cy="58" r="3.2" fill="#E8846B" opacity="0.45" />
-
-        {/* olhos */}
         <Circle cx="43.5" cy="51" r="2.5" fill="#3A2A20" />
         <Circle cx="56.5" cy="51" r="2.5" fill="#3A2A20" />
-
-        {/* sorriso */}
         <Path d="M44 58 Q50 63 56 58" stroke="#3A2A20" strokeWidth="2.2" strokeLinecap="round" fill="none" />
 
-        {/* ===== chapéus ===== */}
         {chapeu === 'toque' && (
           <G>
             <Rect x="32" y="32" width="36" height="8" rx="4" fill="#F0F0F0" />
