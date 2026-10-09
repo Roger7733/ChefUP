@@ -12,4 +12,5 @@ export interface Evaluation {
     likedBy?: string[];
     avatarHat?: string;
     avatarColor?: string;
+    commentCount?: number;
 }

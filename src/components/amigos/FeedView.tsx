@@ -1,4 +1,5 @@
 import Avatar from '@/components/Avatar';
+import ComentariosModal from '@/components/amigos/ComentariosModal';
 import { Evaluation } from '@/models/Evaluation';
 import {
   alternarCurtida,
@@ -43,6 +44,7 @@ export default function FeedView() {
   const [aba, setAba] = useState<Aba>('amigos');
   const [posts, setPosts] = useState<Evaluation[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [postComentando, setPostComentando] = useState<string | null>(null);
 
   useEffect(() => {
     async function carregar() {
@@ -138,9 +140,13 @@ export default function FeedView() {
                 <View style={styles.divisor} />
 
                 <View style={styles.acoes}>
-                  <Pressable style={styles.curtir} onPress={() => curtir(post)}>
-                    <Text style={styles.curtirIcone}>{jaCurtiu ? '❤️' : '🤍'}</Text>
-                    <Text style={styles.curtirTexto}>{curtidas}</Text>
+                  <Pressable style={styles.acao} onPress={() => curtir(post)}>
+                    <Text style={styles.acaoIcone}>{jaCurtiu ? '❤️' : '🤍'}</Text>
+                    <Text style={styles.acaoTexto}>{curtidas}</Text>
+                  </Pressable>
+                  <Pressable style={styles.acao} onPress={() => setPostComentando(post.id)}>
+                    <Text style={styles.acaoIcone}>💬</Text>
+                    <Text style={styles.acaoTexto}>{post.commentCount ?? 0}</Text>
                   </Pressable>
                 </View>
               </View>
@@ -148,6 +154,14 @@ export default function FeedView() {
           );
         })
       )}
+
+      <ComentariosModal
+        evaluationId={postComentando}
+        onFechar={() => setPostComentando(null)}
+        onComentou={(id) =>
+          setPosts((atual) => atual.map((p) => (p.id === id ? { ...p, commentCount: (p.commentCount ?? 0) + 1 } : p)))
+        }
+      />
     </View>
   );
 }
@@ -173,8 +187,8 @@ const styles = StyleSheet.create({
   legenda: { fontSize: 15, color: '#2A1A12' },
   feedbackIA: { fontSize: 13, color: '#9B8674', fontStyle: 'italic' },
   divisor: { height: 1, backgroundColor: '#F0EEE9', marginTop: 6 },
-  acoes: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
-  curtir: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4 },
-  curtirIcone: { fontSize: 18 },
-  curtirTexto: { fontSize: 14, fontWeight: 'bold', color: '#2A1A12' },
+  acoes: { flexDirection: 'row', alignItems: 'center', gap: 20, marginTop: 2 },
+  acao: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4 },
+  acaoIcone: { fontSize: 18 },
+  acaoTexto: { fontSize: 14, fontWeight: 'bold', color: '#2A1A12' },
 });
