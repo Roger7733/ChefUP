@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const CODIGOS: Record<string, string> = {
   italiana: 'IT', japonesa: 'JP', francesa: 'FR', brasileira: 'BR', mexicana: 'MX',
@@ -21,6 +22,7 @@ function nomeMundo(id: string): string {
 const GRAD_PROXIMA = ['#D63E2A', '#F39C12'] as const;
 
 export default function MundoScreen() {
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [fases, setFases] = useState<Phase[]>([]);
   const [progressos, setProgressos] = useState<Progress[]>([]);
@@ -83,7 +85,7 @@ export default function MundoScreen() {
   return (
     <View style={styles.screen}>
       {/* CABEÇALHO */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 6 }]}>
         <View style={styles.headerTopo}>
           <Pressable onPress={() => router.back()} hitSlop={10}>
             <Text style={styles.voltar}>‹</Text>
@@ -138,7 +140,6 @@ export default function MundoScreen() {
             const concluida = progresso !== null;
             const liberada = faseLiberada(indice);
 
-            // onda começando na esquerda, balanço mais acentuado
             const offset = Math.round(-Math.cos(indice * (Math.PI / 3)) * 85);
 
             return (
@@ -191,7 +192,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#FBF6EC' },
   centro: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FBF6EC' },
 
-  header: { paddingTop: 50, paddingHorizontal: 20, paddingBottom: 12, backgroundColor: '#FBF6EC' },
+  header: { paddingHorizontal: 20, paddingBottom: 12, backgroundColor: '#FBF6EC' },
   headerTopo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   voltar: { fontSize: 32, color: '#2A1A12', fontWeight: '300', lineHeight: 34 },
   streak: { fontSize: 16, fontWeight: 'bold', color: '#D63E2A' },

@@ -4,6 +4,7 @@ import { buscarInventario, buscarItens } from '@/services/shopService';
 import { useUserStore } from '@/viewmodels/userStore';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Aba = 'chapeu' | 'avental' | 'utensilio';
 
@@ -16,6 +17,8 @@ const ABAS: { key: Aba; label: string }[] = [
 const CORES = ['#C0392B', '#4F7239', '#2C6E7F', '#5B3A57', '#B9770E', '#334155'];
 
 export default function Loja() {
+  const insets = useSafeAreaInsets();
+
   const [itens, setItens] = useState<Item[]>([]);
   const [comprados, setComprados] = useState<string[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -74,7 +77,7 @@ export default function Loja() {
 
   return (
     <View style={styles.screen}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <Text style={styles.titulo}>Loja</Text>
         <View style={styles.moedasPill}>
           <Text style={styles.moedasTexto}>🪙 {coins}</Text>
@@ -139,7 +142,7 @@ export default function Loja() {
                   <Avatar size={56} hat={item.avatarHat} />
                   <Text style={styles.cardNome}>{item.name}</Text>
                   <Text style={styles.cardPreco}>{item.price === 0 ? 'Grátis' : `🪙 ${item.price}`}</Text>
-                  {equipado && <Text style={styles.badge}>Equipado</Text>}
+                  {equipado && <Text style={styles.badge}>✓ Equipado</Text>}
                 </Pressable>
               );
             })}
@@ -152,7 +155,7 @@ export default function Loja() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#FBF6EC' },
-  header: { paddingTop: 60, paddingHorizontal: 20, paddingBottom: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  header: { paddingHorizontal: 20, paddingBottom: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   titulo: { fontSize: 26, fontWeight: 'bold', color: '#2A1A12' },
   moedasPill: { backgroundColor: '#FFF3D6', paddingVertical: 6, paddingHorizontal: 14, borderRadius: 20 },
   moedasTexto: { fontSize: 15, fontWeight: 'bold', color: '#A9761A' },

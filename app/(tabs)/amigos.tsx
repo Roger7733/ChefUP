@@ -3,14 +3,16 @@ import FeedView from '@/components/amigos/FeedView';
 import RankingView from '@/components/amigos/RankingView';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Aba = 'feed' | 'ranking' | 'adicionar';
 
 export default function Amigos() {
+  const insets = useSafeAreaInsets();
   const [aba, setAba] = useState<Aba>('feed');
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { paddingTop: insets.top + 8 }]}>
       <Text style={styles.title}>Amigos</Text>
 
       <View style={styles.abas}>
@@ -44,7 +46,7 @@ export default function Amigos() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#FBF6EC', paddingTop: 60 },
+  screen: { flex: 1, backgroundColor: '#FBF6EC' },
   title: { fontSize: 24, fontWeight: 'bold', color: '#2A1A12', paddingHorizontal: 20, marginBottom: 12 },
   abas: {
     flexDirection: 'row', gap: 8, paddingHorizontal: 20, marginBottom: 16,

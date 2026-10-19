@@ -7,6 +7,7 @@ import { useUserStore } from '@/viewmodels/userStore';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function faixaNivel(xp: number, nivel: number) {
   let inicio = xp;
@@ -21,6 +22,8 @@ function faixaNivel(xp: number, nivel: number) {
 }
 
 export default function Perfil() {
+  const insets = useSafeAreaInsets();
+
   const name = useUserStore((s) => s.name);
   const email = useUserStore((s) => s.email);
   const coins = useUserStore((s) => s.coins);
@@ -60,7 +63,7 @@ export default function Perfil() {
 
   return (
     <>
-      <ScrollView style={styles.screen} contentContainerStyle={styles.conteudo}>
+      <ScrollView style={styles.screen} contentContainerStyle={[styles.conteudo, { paddingTop: insets.top + 8 }]}>
         <Text style={styles.titulo}>Perfil</Text>
 
         {/* card principal */}
@@ -160,7 +163,7 @@ export default function Perfil() {
                       <Text style={styles.modalDesc}>{selecionada.descricao}</Text>
                       <Text style={desbloqueada ? styles.modalFeito : styles.modalProgresso}>
                         {desbloqueada
-                          ? 'Conquista desbloqueada!'
+                          ? '✓ Conquista desbloqueada!'
                           : `Progresso: ${Math.min(atual, selecionada.meta)} / ${selecionada.meta}`}
                       </Text>
                       <Pressable style={styles.modalBotao} onPress={() => setSelecionada(null)}>
@@ -180,7 +183,7 @@ export default function Perfil() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#FBF6EC' },
-  conteudo: { padding: 20, paddingTop: 60, gap: 16, paddingBottom: 40 },
+  conteudo: { padding: 20, gap: 16, paddingBottom: 40 },
   titulo: { fontSize: 26, fontWeight: 'bold', color: '#2A1A12' },
 
   card: {

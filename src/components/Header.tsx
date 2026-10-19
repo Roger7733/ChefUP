@@ -1,12 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type HeaderProps = {
   title: string;
 };
 
 export default function Header({ title }: HeaderProps) {
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
       <Text style={styles.title}>{title}</Text>
     </View>
   );
@@ -14,14 +16,13 @@ export default function Header({ title }: HeaderProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FF6B35',
-    paddingVertical: 20,
-    paddingHorizontal: 16,
-    paddingTop: 60,
+    backgroundColor: '#FBF6EC',
+    paddingHorizontal: 20,
+    paddingBottom: 12,
   },
   title: {
-    color: '#FFFFFF',
-    fontSize: 24,
+    color: '#2A1A12',
+    fontSize: 26,
     fontWeight: 'bold',
   },
 });
