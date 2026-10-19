@@ -1,3 +1,4 @@
+import Avatar from '@/components/Avatar';
 import { User } from '@/models/User';
 import { listarAmigos } from '@/services/friendshipService';
 import { buscarUsuario } from '@/services/userService';
@@ -55,9 +56,7 @@ export default function RankingView() {
       <View style={styles.podio}>
         {segundo ? (
           <View style={styles.podioItem}>
-            <View style={[styles.podioAvatar, styles.avatarPrata]}>
-              <Text style={styles.podioAvatarTexto}>{segundo.name.charAt(0).toUpperCase()}</Text>
-            </View>
+            <Avatar size={56} circleColor={segundo.avatarColor ?? '#C0392B'} hat={segundo.equippedHat ?? 'toque'} outfit="normal" ring ringColor="#B0B0B0" />
             <Text style={styles.podioMedalha}>🥈</Text>
             <View style={[styles.podioBase, styles.baseSegundo]}>
               <Text style={styles.podioPosicao}>2</Text>
@@ -74,9 +73,7 @@ export default function RankingView() {
         {primeiro ? (
           <View style={styles.podioItem}>
             <Text style={styles.coroa}>👑</Text>
-            <View style={[styles.podioAvatar, styles.avatarOuro]}>
-              <Text style={styles.podioAvatarTexto}>{primeiro.name.charAt(0).toUpperCase()}</Text>
-            </View>
+            <Avatar size={56} circleColor={primeiro.avatarColor ?? '#C0392B'} hat={primeiro.equippedHat ?? 'toque'} outfit="normal" ring ringColor="#E8A736" />
             <Text style={styles.podioMedalha}>🥇</Text>
             <View style={[styles.podioBase, styles.basePrimeiro]}>
               <Text style={styles.podioPosicao}>1</Text>
@@ -92,9 +89,7 @@ export default function RankingView() {
 
         {terceiro ? (
           <View style={styles.podioItem}>
-            <View style={[styles.podioAvatar, styles.avatarBronze]}>
-              <Text style={styles.podioAvatarTexto}>{terceiro.name.charAt(0).toUpperCase()}</Text>
-            </View>
+            <Avatar size={56} circleColor={terceiro.avatarColor ?? '#C0392B'} hat={terceiro.equippedHat ?? 'toque'} outfit="normal" ring ringColor="#C0803C" />
             <Text style={styles.podioMedalha}>🥉</Text>
             <View style={[styles.podioBase, styles.baseTerceiro]}>
               <Text style={styles.podioPosicao}>3</Text>
@@ -115,9 +110,7 @@ export default function RankingView() {
         return (
           <View key={usuario.id} style={[styles.linha, souEu && styles.linhaEu]}>
             <Text style={styles.posicao}>{posicao}º</Text>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarTexto}>{usuario.name.charAt(0).toUpperCase()}</Text>
-            </View>
+            <Avatar size={44} circleColor={usuario.avatarColor ?? '#C0392B'} hat={usuario.equippedHat ?? 'toque'} outfit="normal" />
             <View style={styles.info}>
               <Text style={styles.nome}>
                 {usuario.name} {souEu && <Text style={styles.voce}>(você)</Text>}
@@ -137,14 +130,6 @@ const styles = StyleSheet.create({
   podio: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', marginBottom: 24, gap: 8 },
   podioItem: { flex: 1, alignItems: 'center' },
   coroa: { fontSize: 22, marginBottom: 2 },
-  podioAvatar: {
-    width: 56, height: 56, borderRadius: 28,
-    justifyContent: 'center', alignItems: 'center', borderWidth: 3,
-  },
-  avatarOuro: { backgroundColor: '#E8A736', borderColor: '#C68514' },
-  avatarPrata: { backgroundColor: '#B0B0B0', borderColor: '#909090' },
-  avatarBronze: { backgroundColor: '#C0803C', borderColor: '#9B6428' },
-  podioAvatarTexto: { color: '#FFF', fontSize: 22, fontWeight: 'bold' },
   podioMedalha: { fontSize: 20, marginTop: -8 },
   podioBase: {
     width: '90%', justifyContent: 'flex-start', alignItems: 'center',
@@ -162,11 +147,6 @@ const styles = StyleSheet.create({
   },
   linhaEu: { borderWidth: 2, borderColor: '#D63E2A' },
   posicao: { fontSize: 18, fontWeight: 'bold', color: '#9B8674', width: 36 },
-  avatar: {
-    width: 44, height: 44, borderRadius: 22, backgroundColor: '#D63E2A',
-    justifyContent: 'center', alignItems: 'center',
-  },
-  avatarTexto: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
   info: { flex: 1 },
   nome: { fontSize: 16, fontWeight: 'bold', color: '#2A1A12' },
   voce: { color: '#D63E2A', fontWeight: 'normal' },

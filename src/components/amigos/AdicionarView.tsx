@@ -1,12 +1,13 @@
+import Avatar from '@/components/Avatar';
 import { Friendship } from '@/models/Friendship';
 import { User } from '@/models/User';
 import {
-    aceitarPedido,
-    buscarUsuariosPorNome,
-    enviarPedido,
-    listarAmigos,
-    listarPedidosEnviados,
-    listarPedidosRecebidos,
+  aceitarPedido,
+  buscarUsuariosPorNome,
+  enviarPedido,
+  listarAmigos,
+  listarPedidosEnviados,
+  listarPedidosRecebidos,
 } from '@/services/friendshipService';
 import { buscarUsuario } from '@/services/userService';
 import { useUserStore } from '@/viewmodels/userStore';
@@ -132,9 +133,7 @@ export default function AdicionarView() {
           {pedidos.map((p) => (
             <View key={p.friendship.id} style={styles.card}>
               <View style={styles.cardEsquerda}>
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarTexto}>{p.remetente.name.charAt(0).toUpperCase()}</Text>
-                </View>
+                <Avatar size={44} circleColor={p.remetente.avatarColor ?? '#C0392B'} hat={p.remetente.equippedHat ?? 'toque'} outfit="normal" />
                 <View>
                   <Text style={styles.nome}>{p.remetente.name}</Text>
                   <Text style={styles.nivel}>quer ser seu amigo</Text>
@@ -171,9 +170,7 @@ export default function AdicionarView() {
             return (
               <View key={item.id} style={styles.card}>
                 <View style={styles.cardEsquerda}>
-                  <View style={styles.avatar}>
-                    <Text style={styles.avatarTexto}>{item.name.charAt(0).toUpperCase()}</Text>
-                  </View>
+                  <Avatar size={44} circleColor={item.avatarColor ?? '#C0392B'} hat={item.equippedHat ?? 'toque'} outfit="normal" />
                   <View>
                     <Text style={styles.nome}>{item.name}</Text>
                     <Text style={styles.nivel}>Nível {item.level}</Text>
@@ -208,9 +205,7 @@ export default function AdicionarView() {
           amigos.map((amigo) => (
             <View key={amigo.id} style={styles.card}>
               <View style={styles.cardEsquerda}>
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarTexto}>{amigo.name.charAt(0).toUpperCase()}</Text>
-                </View>
+                <Avatar size={44} circleColor={amigo.avatarColor ?? '#C0392B'} hat={amigo.equippedHat ?? 'toque'} outfit="normal" />
                 <View>
                   <Text style={styles.nome}>{amigo.name}</Text>
                   <Text style={styles.nivel}>Nível {amigo.level}</Text>
@@ -241,11 +236,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF', padding: 14, borderRadius: 12,
   },
   cardEsquerda: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
-  avatar: {
-    width: 44, height: 44, borderRadius: 22, backgroundColor: '#D63E2A',
-    justifyContent: 'center', alignItems: 'center',
-  },
-  avatarTexto: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
   nome: { fontSize: 16, fontWeight: 'bold', color: '#2A1A12' },
   nivel: { fontSize: 13, color: '#9B8674', marginTop: 2 },
   botaoSeguir: { backgroundColor: '#D63E2A', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8 },
