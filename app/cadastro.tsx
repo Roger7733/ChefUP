@@ -1,9 +1,10 @@
+import Avatar from '@/components/Avatar';
 import { User } from '@/models/User';
 import { registrar } from '@/services/authService';
 import { salvarUsuario } from '@/services/userService';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 export default function Cadastro() {
   const [nome, setNome] = useState('');
@@ -34,7 +35,6 @@ export default function Cadastro() {
       };
 
       await salvarUsuario(novoUsuario);
-      setMensagem('Conta criada e salva no banco!');
       router.replace('/(tabs)');
     } catch (erro: any) {
       setMensagem('Erro: ' + (erro.message || JSON.stringify(erro)));
@@ -43,75 +43,67 @@ export default function Cadastro() {
   }
 
   return (
-    <View style={styles.screen}>
-      <Text style={styles.title}>Criar conta</Text>
+    <KeyboardAvoidingView behavior="padding" style={styles.screen}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.conteudo} keyboardShouldPersistTaps="handled">
+        <View style={styles.topo}>
+          <Avatar size={96} hat="toque" circleColor="#C0392B" outfit="normal" />
+          <Text style={styles.marca}>Criar conta</Text>
+          <Text style={styles.subtitulo}>Bora cozinhar de verdade!</Text>
+        </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Seu nome"
-        value={nome}
-        onChangeText={setNome}
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Seu nome"
+          placeholderTextColor="#B3A796"
+          value={nome}
+          onChangeText={setNome}
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="E-mail"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="E-mail"
+          placeholderTextColor="#B3A796"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Senha"
-        value={senha}
-        onChangeText={setSenha}
-        secureTextEntry
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Senha"
+          placeholderTextColor="#B3A796"
+          value={senha}
+          onChangeText={setSenha}
+          secureTextEntry
+        />
 
-      <Pressable style={styles.button} onPress={handleCadastro}>
-        <Text style={styles.buttonText}>Cadastrar</Text>
-      </Pressable>
+        {mensagem ? <Text style={styles.erro}>{mensagem}</Text> : null}
 
-      <Text style={styles.mensagem}>{mensagem}</Text>
-    </View>
+        <Pressable style={styles.botao} onPress={handleCadastro}>
+          <Text style={styles.botaoTexto}>Cadastrar</Text>
+        </Pressable>
+
+        <Pressable onPress={() => router.back()}>
+          <Text style={styles.link}>Já tenho conta — entrar</Text>
+        </Pressable>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 24,
-    gap: 16,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
+  screen: { flex: 1, backgroundColor: '#FBF6EC' },
+  conteudo: { flexGrow: 1, justifyContent: 'center', padding: 24, gap: 14 },
+  topo: { alignItems: 'center', gap: 6, marginBottom: 14 },
+  marca: { fontSize: 28, fontWeight: 'bold', color: '#2A1A12', marginTop: 8 },
+  subtitulo: { fontSize: 15, color: '#9B8674' },
   input: {
-    borderWidth: 1,
-    borderColor: '#CCCCCC',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
+    backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E0D6C6', borderRadius: 12,
+    padding: 14, fontSize: 16, color: '#2A1A12',
   },
-  button: {
-    backgroundColor: '#FF6B35',
-    padding: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  mensagem: {
-    fontSize: 14,
-    color: '#666666',
-    textAlign: 'center',
-  },
+  erro: { fontSize: 14, color: '#C0392B', textAlign: 'center' },
+  botao: { backgroundColor: '#D63E2A', paddingVertical: 15, borderRadius: 12, alignItems: 'center', marginTop: 4 },
+  botaoTexto: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
+  link: { fontSize: 15, color: '#D63E2A', textAlign: 'center', fontWeight: '600', marginTop: 6 },
 });

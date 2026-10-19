@@ -4,7 +4,7 @@ import { listarAmigos } from '@/services/friendshipService';
 import { buscarUsuario } from '@/services/userService';
 import { useUserStore } from '@/viewmodels/userStore';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 export default function RankingView() {
   const meuId = useUserStore((state) => state.id);
@@ -52,7 +52,7 @@ export default function RankingView() {
   const terceiro = podio[2];
 
   return (
-    <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+    <View>
       <View style={styles.podio}>
         {segundo ? (
           <View style={styles.podioItem}>
@@ -121,7 +121,7 @@ export default function RankingView() {
           </View>
         );
       })}
-    </ScrollView>
+    </View>
   );
 }
 

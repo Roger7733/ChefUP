@@ -7,6 +7,7 @@ import { useUserStore } from '@/viewmodels/userStore';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const CODIGOS: Record<string, string> = {
@@ -122,40 +123,41 @@ export default function Index() {
         {carregando ? (
           <ActivityIndicator size="large" color="#D63E2A" style={{ marginTop: 20 }} />
         ) : (
-          mundos.map((mundo) => {
+          mundos.map((mundo, i) => {
             const bloqueado = level < mundo.minLevel;
             const info = infos[mundo.id] ?? { total: 0, concluidas: 0 };
             const pct = info.total > 0 ? info.concluidas / info.total : 0;
 
             return (
-              <Pressable
-                key={mundo.id}
-                style={[styles.card, bloqueado && styles.cardBloqueado]}
-                disabled={bloqueado}
-                onPress={() => router.push(`/mundo/${mundo.id}`)}
-              >
-                <View style={[styles.tile, bloqueado && styles.tileBloqueado]}>
-                  <Text style={{ fontSize: 26 }}>{bloqueado ? '🔒' : EMOJIS[mundo.id] ?? '🍽️'}</Text>
-                </View>
-
-                <View style={{ flex: 1 }}>
-                  <View style={styles.cardTituloLinha}>
-                    <Text style={[styles.cardBadge, bloqueado && styles.textoBloqueado]}>{codigoPais(mundo.id)}</Text>
-                    <Text style={[styles.cardNome, bloqueado && styles.textoBloqueado]}>{mundo.name}</Text>
+              <Animated.View key={mundo.id} entering={FadeInDown.duration(450).delay(i * 60)}>
+                <Pressable
+                  style={[styles.card, bloqueado && styles.cardBloqueado]}
+                  disabled={bloqueado}
+                  onPress={() => router.push(`/mundo/${mundo.id}`)}
+                >
+                  <View style={[styles.tile, bloqueado && styles.tileBloqueado]}>
+                    <Text style={{ fontSize: 26 }}>{bloqueado ? '🔒' : EMOJIS[mundo.id] ?? '🍽️'}</Text>
                   </View>
 
-                  {bloqueado ? (
-                    <Text style={styles.cardLock}>🔒 Desbloqueia no nível {mundo.minLevel}</Text>
-                  ) : (
-                    <View style={styles.progressoLinha}>
-                      <View style={styles.progFundo}>
-                        <View style={[styles.progFill, { width: `${pct * 100}%` }]} />
-                      </View>
-                      <Text style={styles.progTexto}>{info.concluidas}/{info.total}</Text>
+                  <View style={{ flex: 1 }}>
+                    <View style={styles.cardTituloLinha}>
+                      <Text style={[styles.cardBadge, bloqueado && styles.textoBloqueado]}>{codigoPais(mundo.id)}</Text>
+                      <Text style={[styles.cardNome, bloqueado && styles.textoBloqueado]}>{mundo.name}</Text>
                     </View>
-                  )}
-                </View>
-              </Pressable>
+
+                    {bloqueado ? (
+                      <Text style={styles.cardLock}>🔒 Desbloqueia no nível {mundo.minLevel}</Text>
+                    ) : (
+                      <View style={styles.progressoLinha}>
+                        <View style={styles.progFundo}>
+                          <View style={[styles.progFill, { width: `${pct * 100}%` }]} />
+                        </View>
+                        <Text style={styles.progTexto}>{info.concluidas}/{info.total}</Text>
+                      </View>
+                    )}
+                  </View>
+                </Pressable>
+              </Animated.View>
             );
           })
         )}
@@ -169,7 +171,7 @@ const styles = StyleSheet.create({
 
   topo: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 20, paddingBottom: 8 },
   streak: { fontSize: 15, fontWeight: 'bold', color: '#D63E2A' },
-    nivelBadge: { width: 26, height: 26, borderRadius: 13, backgroundColor: '#2A1A12', alignItems: 'center', justifyContent: 'center' },
+  nivelBadge: { width: 26, height: 26, borderRadius: 13, backgroundColor: '#D63E2A', alignItems: 'center', justifyContent: 'center' },
   nivelBadgeTexto: { color: '#FFF', fontWeight: 'bold', fontSize: 13 },
   xpFundo: { flex: 1, height: 8, borderRadius: 4, backgroundColor: '#EDE4D2', overflow: 'hidden' },
   xpFill: { height: 8, borderRadius: 4, backgroundColor: '#E8A736' },
