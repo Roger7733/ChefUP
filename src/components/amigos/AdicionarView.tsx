@@ -1,4 +1,6 @@
 import Avatar from '@/components/Avatar';
+import EscanearQrModal from '@/components/amigos/EscanearQrModal';
+import MeuQrModal from '@/components/amigos/MeuQrModal';
 import { Friendship } from '@/models/Friendship';
 import { User } from '@/models/User';
 import {
@@ -11,8 +13,10 @@ import {
 } from '@/services/friendshipService';
 import { buscarUsuario } from '@/services/userService';
 import { useUserStore } from '@/viewmodels/userStore';
+import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
 
 type PedidoComNome = {
   friendship: Friendship;
@@ -25,6 +29,7 @@ export default function AdicionarView() {
   const [termo, setTermo] = useState('');
   const [resultados, setResultados] = useState<User[]>([]);
   const [buscando, setBuscando] = useState(false);
+  const [buscou, setBuscou] = useState(false);
 
   const [pedidos, setPedidos] = useState<PedidoComNome[]>([]);
   const [amigos, setAmigos] = useState<User[]>([]);
@@ -32,6 +37,9 @@ export default function AdicionarView() {
   const [idsAmigos, setIdsAmigos] = useState<string[]>([]);
   const [idsEnviados, setIdsEnviados] = useState<string[]>([]);
   const [idsRecebidos, setIdsRecebidos] = useState<string[]>([]);
+
+  const [mostrarMeuQr, setMostrarMeuQr] = useState(false);
+  const [mostrarScanner, setMostrarScanner] = useState(false);
 
   useEffect(() => {
     carregarTudo();
@@ -102,11 +110,18 @@ export default function AdicionarView() {
       setBuscando(true);
       const usuarios = await buscarUsuariosPorNome(termo.trim(), meuId);
       setResultados(usuarios);
+      setBuscou(true);
     } catch (erro: any) {
       Alert.alert('Erro', erro?.message || 'Não foi possível buscar usuários.');
     } finally {
       setBuscando(false);
     }
+  }
+
+  function limparBusca() {
+    setTermo('');
+    setResultados([]);
+    setBuscou(false);
   }
 
   async function handleSeguir(outroId: string) {
@@ -125,11 +140,64 @@ export default function AdicionarView() {
     return 'nenhum';
   }
 
+  function botaoRelacao(item: User) {
+    const estado = estadoRelacao(item.id);
+    if (estado === 'nenhum') {
+      return (
+        <Pressable style={styles.botaoSeguir} onPress={() => handleSeguir(item.id)}>
+          <Text style={styles.botaoTexto}>+ Adicionar</Text>
+        </Pressable>
+      );
+    }
+    const rotulo = estado === 'enviado' ? 'Pendente' : estado === 'recebido' ? 'Te adicionou' : '✓ Amigo';
+    return <View style={styles.botaoNeutro}><Text style={styles.botaoNeutroTexto}>{rotulo}</Text></View>;
+  }
+
   return (
     <View>
+      {/* BUSCA */}
+      <View style={styles.buscaCard}>
+        <Ionicons name="search" size={18} color="#9B8674" />
+        <TextInput
+          style={styles.buscaInput}
+          placeholder="Buscar um chef pelo nome"
+          placeholderTextColor="#B3A796"
+          value={termo}
+          onChangeText={setTermo}
+          autoCapitalize="none"
+          returnKeyType="search"
+          onSubmitEditing={handleBuscar}
+        />
+        {termo.length > 0 && (
+          <Pressable onPress={limparBusca} hitSlop={8}>
+            <Ionicons name="close-circle" size={18} color="#C9BEAE" />
+          </Pressable>
+        )}
+      </View>
+
+      {/* QR — card dividido */}
+      <View style={styles.qrCard}>
+        <Pressable style={styles.qrMetade} onPress={() => setMostrarMeuQr(true)}>
+          <View style={styles.miniQr}>
+            {meuId ? <QRCode value={meuId} size={46} color="#2A1A12" backgroundColor="#FFFFFF" /> : null}
+          </View>
+          <Text style={styles.qrLabel}>Meu código</Text>
+        </Pressable>
+
+        <View style={styles.qrDivisor} />
+
+        <Pressable style={styles.qrMetade} onPress={() => setMostrarScanner(true)}>
+          <View style={styles.qrIcone}>
+            <Ionicons name="scan" size={28} color="#D63E2A" />
+          </View>
+          <Text style={styles.qrLabel}>Escanear</Text>
+        </Pressable>
+      </View>
+
+      {/* PEDIDOS */}
       {pedidos.length > 0 && (
         <View style={styles.secao}>
-          <Text style={styles.secaoTitulo}>Pedidos recebidos</Text>
+          <Text style={styles.secaoTitulo}>Pedidos recebidos · {pedidos.length}</Text>
           {pedidos.map((p) => (
             <View key={p.friendship.id} style={styles.card}>
               <View style={styles.cardEsquerda}>
@@ -147,27 +215,16 @@ export default function AdicionarView() {
         </View>
       )}
 
-      <View style={styles.buscaLinha}>
-        <TextInput
-          style={styles.input}
-          placeholder="Buscar por nome"
-          value={termo}
-          onChangeText={setTermo}
-          autoCapitalize="none"
-        />
-        <Pressable style={styles.botaoBuscar} onPress={handleBuscar}>
-          <Text style={styles.botaoTexto}>Buscar</Text>
-        </Pressable>
-      </View>
-
-      {buscando && <ActivityIndicator size="large" color="#D63E2A" style={{ marginTop: 20 }} />}
-
-      {resultados.length > 0 && (
+      {/* RESULTADOS (buscando) ou MEUS AMIGOS */}
+      {buscando ? (
+        <ActivityIndicator size="large" color="#D63E2A" style={{ marginTop: 20 }} />
+      ) : buscou ? (
         <View style={styles.secao}>
           <Text style={styles.secaoTitulo}>Resultados</Text>
-          {resultados.map((item) => {
-            const estado = estadoRelacao(item.id);
-            return (
+          {resultados.length === 0 ? (
+            <Text style={styles.vazio}>Nenhum chef encontrado com esse nome.</Text>
+          ) : (
+            resultados.map((item) => (
               <View key={item.id} style={styles.card}>
                 <View style={styles.cardEsquerda}>
                   <Avatar size={44} circleColor={item.avatarColor ?? '#C0392B'} hat={item.equippedHat ?? 'toque'} outfit="normal" />
@@ -176,60 +233,63 @@ export default function AdicionarView() {
                     <Text style={styles.nivel}>Nível {item.level}</Text>
                   </View>
                 </View>
-
-                {estado === 'nenhum' && (
-                  <Pressable style={styles.botaoSeguir} onPress={() => handleSeguir(item.id)}>
-                    <Text style={styles.botaoTexto}>+ Adicionar</Text>
-                  </Pressable>
-                )}
-                {estado === 'enviado' && (
-                  <View style={styles.botaoNeutro}><Text style={styles.botaoNeutroTexto}>Pendente</Text></View>
-                )}
-                {estado === 'recebido' && (
-                  <View style={styles.botaoNeutro}><Text style={styles.botaoNeutroTexto}>Te adicionou</Text></View>
-                )}
-                {estado === 'amigo' && (
-                  <View style={styles.botaoNeutro}><Text style={styles.botaoNeutroTexto}>✓ Amigo</Text></View>
-                )}
+                {botaoRelacao(item)}
               </View>
-            );
-          })}
+            ))
+          )}
+        </View>
+      ) : (
+        <View style={styles.secao}>
+          <Text style={styles.secaoTitulo}>Meus amigos ({amigos.length})</Text>
+          {amigos.length === 0 ? (
+            <Text style={styles.vazio}>Você ainda não tem amigos. Busque por nome ou use o QR Code!</Text>
+          ) : (
+            amigos.map((amigo) => (
+              <View key={amigo.id} style={styles.card}>
+                <View style={styles.cardEsquerda}>
+                  <Avatar size={44} circleColor={amigo.avatarColor ?? '#C0392B'} hat={amigo.equippedHat ?? 'toque'} outfit="normal" />
+                  <View>
+                    <Text style={styles.nome}>{amigo.name}</Text>
+                    <Text style={styles.nivel}>Nível {amigo.level}</Text>
+                  </View>
+                </View>
+              </View>
+            ))
+          )}
         </View>
       )}
 
-      <View style={styles.secao}>
-        <Text style={styles.secaoTitulo}>Meus amigos ({amigos.length})</Text>
-        {amigos.length === 0 ? (
-          <Text style={styles.vazio}>Você ainda não tem amigos. Busque por nome para adicionar!</Text>
-        ) : (
-          amigos.map((amigo) => (
-            <View key={amigo.id} style={styles.card}>
-              <View style={styles.cardEsquerda}>
-                <Avatar size={44} circleColor={amigo.avatarColor ?? '#C0392B'} hat={amigo.equippedHat ?? 'toque'} outfit="normal" />
-                <View>
-                  <Text style={styles.nome}>{amigo.name}</Text>
-                  <Text style={styles.nivel}>Nível {amigo.level}</Text>
-                </View>
-              </View>
-            </View>
-          ))
-        )}
-      </View>
+      <MeuQrModal visivel={mostrarMeuQr} onFechar={() => setMostrarMeuQr(false)} />
+      <EscanearQrModal
+        visivel={mostrarScanner}
+        onFechar={() => setMostrarScanner(false)}
+        onAdicionou={carregarTudo}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  buscaCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    backgroundColor: '#FFF', borderWidth: 1, borderColor: '#F0E6D2', borderRadius: 14,
+    paddingHorizontal: 14, paddingVertical: 12, marginBottom: 16,
+  },
+  buscaInput: { flex: 1, fontSize: 16, color: '#2A1A12', padding: 0 },
+
+  qrCard: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#FFF', borderWidth: 1, borderColor: '#F0E6D2', borderRadius: 16,
+    padding: 14, marginBottom: 20,
+  },
+  qrMetade: { flex: 1, alignItems: 'center', gap: 8 },
+  qrDivisor: { width: 1, alignSelf: 'stretch', backgroundColor: '#F0E6D2', marginVertical: 4 },
+  miniQr: { padding: 6, backgroundColor: '#FFF', borderRadius: 10, borderWidth: 1, borderColor: '#F0E6D2' },
+  qrIcone: { width: 58, height: 58, borderRadius: 12, backgroundColor: '#FBEEDD', alignItems: 'center', justifyContent: 'center' },
+  qrLabel: { fontSize: 13, fontWeight: 'bold', color: '#2A1A12' },
+
   secao: { marginBottom: 24, gap: 10 },
   secaoTitulo: { fontSize: 13, fontWeight: 'bold', color: '#9B8674', textTransform: 'uppercase' },
-  buscaLinha: { flexDirection: 'row', gap: 8, marginBottom: 4 },
-  input: {
-    flex: 1, borderWidth: 1, borderColor: '#DDD', borderRadius: 10,
-    padding: 12, fontSize: 16, backgroundColor: '#FFF',
-  },
-  botaoBuscar: {
-    backgroundColor: '#D63E2A', paddingHorizontal: 18, justifyContent: 'center', borderRadius: 10,
-  },
   vazio: { color: '#9B8674', fontStyle: 'italic' },
   card: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
