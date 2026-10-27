@@ -7,6 +7,7 @@ type Props = {
   size?: number;
   outfit?: 'normal' | 'premium';
   hat?: Chapeu;
+  apron?: string;
   ring?: boolean;
   ringColor?: string;
   circleColor?: string;
@@ -18,6 +19,7 @@ export default function Avatar({
   size = 120,
   outfit,
   hat,
+  apron,
   ring = false,
   ringColor = '#E8A736',
   circleColor,
@@ -27,10 +29,12 @@ export default function Avatar({
   const outfitStore = useUserStore((s) => s.outfit);
   const hatStore = useUserStore((s) => s.equippedHat);
   const corStore = useUserStore((s) => s.avatarColor);
+  const apronStore = useUserStore((s) => s.equippedApron);
 
   const look = outfit || outfitStore || 'normal';
   const chapeu = hat || hatStore || 'toque';
   const cor = circleColor || corStore || '#C0392B';
+  const avental = apron || apronStore || 'nenhum';
   const premium = look === 'premium';
   const temAnel = premium || ring;
   const rInterno = temAnel ? 46 : 50;
@@ -50,6 +54,17 @@ export default function Avatar({
         <Rect x="42" y="62" width="16" height="22" rx="6" fill={skin} />
         <Ellipse cx="50" cy="102" rx="31" ry="25" fill="#FFFFFF" />
         <Path d="M44 86 Q50 94 56 86" stroke="#E2D8C8" strokeWidth="2" strokeLinecap="round" fill="none" />
+
+        {/* avental */}
+        {avental !== 'nenhum' && (
+          <G>
+            <Path d="M40 81 L43 70" stroke={avental} strokeWidth="4" strokeLinecap="round" />
+            <Path d="M60 81 L57 70" stroke={avental} strokeWidth="4" strokeLinecap="round" />
+            <Path d="M38 80 Q50 77 62 80 L66 106 L34 106 Z" fill={avental} />
+            <Rect x="42" y="91" width="16" height="9" rx="2" fill="#000000" opacity="0.12" />
+          </G>
+        )}
+
         <Circle cx="50" cy="52" r="20" fill={skin} stroke="#B5824F" strokeWidth="1.3" />
         <Path d="M30 54 C29 40 36 32 50 32 C64 32 71 40 70 54 C67 48 61 45 55 46 C52 48 50 49 50 49 C50 49 48 48 45 46 C39 45 33 48 30 54 Z" fill={hair} />
         <Circle cx="40" cy="58" r="3.2" fill="#E8846B" opacity="0.45" />

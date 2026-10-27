@@ -1,4 +1,9 @@
-import { enviarPedido } from '@/services/friendshipService';
+import {
+  enviarPedido,
+  listarAmigos,
+  listarPedidosEnviados,
+  listarPedidosRecebidos,
+} from '@/services/friendshipService';
 import { buscarUsuario } from '@/services/userService';
 import { useUserStore } from '@/viewmodels/userStore';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -15,18 +20,29 @@ export default function EscanearQrModal({ visivel, onFechar, onAdicionou }: Prop
   const [processando, setProcessando] = useState(false);
   const [jaLeu, setJaLeu] = useState(false);
 
-  // libera a leitura toda vez que o scanner abre de novo
   useEffect(() => {
     if (visivel) setJaLeu(false);
   }, [visivel]);
 
+  // mostra um aviso e libera a câmera pra tentar de novo
+  function avisar(titulo: string, msg: string) {
+    Alert.alert(titulo, msg, [{ text: 'OK', onPress: () => setJaLeu(false) }]);
+  }
+
   async function aoLer({ data }: { data: string }) {
     if (jaLeu || processando) return;
     setJaLeu(true);
+
     const outroId = (data || '').trim();
 
-    if (!outroId || outroId === meuId) {
-      Alert.alert('Ops', 'QR Code inválido (ou é o seu próprio).');
+    // ID do Firebase é só letras/números (~28 chars). Qualquer outra coisa não é um usuário.
+    const formatoValido = /^[A-Za-z0-9]{16,40}$/.test(outroId);
+    if (!formatoValido) {
+      avisar('QR Code inválido', 'Esse código não é de um usuário do ChefUP.');
+      return;
+    }
+    if (outroId === meuId) {
+      avisar('Opa', 'Esse é o seu próprio QR Code 😅');
       return;
     }
 
@@ -34,17 +50,42 @@ export default function EscanearQrModal({ visivel, onFechar, onAdicionou }: Prop
       setProcessando(true);
       const usuario = await buscarUsuario(outroId);
       if (!usuario) {
-        Alert.alert('Não encontrado', 'Esse QR Code não corresponde a um usuário.');
-        setJaLeu(false);
+        avisar('Não encontrado', 'Esse QR Code não corresponde a um usuário do ChefUP.');
         return;
       }
+
+      // já são amigos? já existe pedido?
+      const [amizades, enviados, recebidos] = await Promise.all([
+        listarAmigos(meuId),
+        listarPedidosEnviados(meuId),
+        listarPedidosRecebidos(meuId),
+      ]);
+      const jaAmigo = amizades.some((a) => a.userId1 === outroId || a.userId2 === outroId);
+      const jaEnviado = enviados.some((f) => f.userId2 === outroId);
+      const jaRecebido = recebidos.some((f) => f.userId1 === outroId);
+
+      if (jaAmigo) {
+        Alert.alert('Já são amigos', `Você e ${usuario.name} já são amigos. 🎉`);
+        onFechar();
+        return;
+      }
+      if (jaEnviado) {
+        Alert.alert('Pedido já enviado', `Você já tinha enviado um pedido para ${usuario.name}.`);
+        onFechar();
+        return;
+      }
+      if (jaRecebido) {
+        Alert.alert('Ele já te adicionou', `${usuario.name} já te enviou um pedido — é só aceitar na lista!`);
+        onFechar();
+        return;
+      }
+
       await enviarPedido(meuId, outroId);
       Alert.alert('Pronto!', `Pedido de amizade enviado para ${usuario.name}.`);
       onAdicionou?.();
       onFechar();
     } catch (erro: any) {
-      Alert.alert('Erro', erro?.message || 'Não foi possível enviar o pedido.');
-      setJaLeu(false);
+      avisar('Ops', 'Não consegui processar esse QR Code. Tente outro.');
     } finally {
       setProcessando(false);
     }

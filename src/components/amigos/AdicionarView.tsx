@@ -201,7 +201,7 @@ export default function AdicionarView() {
           {pedidos.map((p) => (
             <View key={p.friendship.id} style={styles.card}>
               <View style={styles.cardEsquerda}>
-                <Avatar size={44} circleColor={p.remetente.avatarColor ?? '#C0392B'} hat={p.remetente.equippedHat ?? 'toque'} outfit="normal" />
+                <Avatar size={44} circleColor={p.remetente.avatarColor ?? '#C0392B'} hat={p.remetente.equippedHat ?? 'toque'} apron={p.remetente.equippedApron ?? 'nenhum'} outfit="normal" />
                 <View>
                   <Text style={styles.nome}>{p.remetente.name}</Text>
                   <Text style={styles.nivel}>quer ser seu amigo</Text>
@@ -227,7 +227,7 @@ export default function AdicionarView() {
             resultados.map((item) => (
               <View key={item.id} style={styles.card}>
                 <View style={styles.cardEsquerda}>
-                  <Avatar size={44} circleColor={item.avatarColor ?? '#C0392B'} hat={item.equippedHat ?? 'toque'} outfit="normal" />
+                  <Avatar size={44} circleColor={item.avatarColor ?? '#C0392B'} hat={item.equippedHat ?? 'toque'} apron={item.equippedApron ?? 'nenhum'} outfit="normal" />
                   <View>
                     <Text style={styles.nome}>{item.name}</Text>
                     <Text style={styles.nivel}>Nível {item.level}</Text>
@@ -247,7 +247,7 @@ export default function AdicionarView() {
             amigos.map((amigo) => (
               <View key={amigo.id} style={styles.card}>
                 <View style={styles.cardEsquerda}>
-                  <Avatar size={44} circleColor={amigo.avatarColor ?? '#C0392B'} hat={amigo.equippedHat ?? 'toque'} outfit="normal" />
+                  <Avatar size={44} circleColor={amigo.avatarColor ?? '#C0392B'} hat={amigo.equippedHat ?? 'toque'} apron={amigo.equippedApron ?? 'nenhum'} outfit="normal" />
                   <View>
                     <Text style={styles.nome}>{amigo.name}</Text>
                     <Text style={styles.nivel}>Nível {amigo.level}</Text>

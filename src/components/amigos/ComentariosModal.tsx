@@ -16,6 +16,7 @@ export default function ComentariosModal({ evaluationId, onFechar, onComentou }:
   const meuNome = useUserStore((s) => s.name);
   const minhaCor = useUserStore((s) => s.avatarColor);
   const meuChapeu = useUserStore((s) => s.equippedHat);
+  const meuAvental = useUserStore((s) => s.equippedApron);
 
   const [comentarios, setComentarios] = useState<Comment[]>([]);
   const [texto, setTexto] = useState('');
@@ -50,6 +51,7 @@ export default function ComentariosModal({ evaluationId, onFechar, onComentou }:
         date: new Date().toISOString(),
         avatarColor: minhaCor,
         avatarHat: meuChapeu,
+        avatarApron: meuAvental,
       });
       setComentarios((atual) => [...atual, novo]);
       setTexto('');
@@ -81,7 +83,7 @@ export default function ComentariosModal({ evaluationId, onFechar, onComentou }:
               ) : (
                 comentarios.map((c) => (
                   <View key={c.id} style={styles.comentario}>
-                    <Avatar size={34} hat={(c.avatarHat as any) ?? 'toque'} outfit="normal" circleColor={c.avatarColor ?? '#C0392B'} />
+                    <Avatar size={34} hat={(c.avatarHat as any) ?? 'toque'} apron={(c.avatarApron as any) ?? 'nenhum'} outfit="normal" circleColor={c.avatarColor ?? '#C0392B'} />
                     <View style={{ flex: 1 }}>
                       <Text style={styles.comentarioNome}>{c.userId === meuId ? 'Você' : c.userName}</Text>
                       <Text style={styles.comentarioTexto}>{c.text}</Text>

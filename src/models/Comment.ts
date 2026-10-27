@@ -7,4 +7,5 @@ export interface Comment {
     date: string;
     avatarColor?: string;
     avatarHat?: string;
+    avatarApron?: string;
 }

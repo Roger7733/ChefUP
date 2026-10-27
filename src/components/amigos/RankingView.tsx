@@ -56,7 +56,7 @@ export default function RankingView() {
       <View style={styles.podio}>
         {segundo ? (
           <View style={styles.podioItem}>
-            <Avatar size={56} circleColor={segundo.avatarColor ?? '#C0392B'} hat={segundo.equippedHat ?? 'toque'} outfit="normal" ring ringColor="#B0B0B0" />
+            <Avatar size={56} circleColor={segundo.avatarColor ?? '#C0392B'} hat={segundo.equippedHat ?? 'toque'} apron={segundo.equippedApron ?? 'nenhum'} outfit="normal" ring ringColor="#B0B0B0" />
             <Text style={styles.podioMedalha}>🥈</Text>
             <View style={[styles.podioBase, styles.baseSegundo]}>
               <Text style={styles.podioPosicao}>2</Text>
@@ -73,7 +73,7 @@ export default function RankingView() {
         {primeiro ? (
           <View style={styles.podioItem}>
             <Text style={styles.coroa}>👑</Text>
-            <Avatar size={56} circleColor={primeiro.avatarColor ?? '#C0392B'} hat={primeiro.equippedHat ?? 'toque'} outfit="normal" ring ringColor="#E8A736" />
+            <Avatar size={56} circleColor={primeiro.avatarColor ?? '#C0392B'} hat={primeiro.equippedHat ?? 'toque'} apron={primeiro.equippedApron ?? 'nenhum'} outfit="normal" ring ringColor="#E8A736" />
             <Text style={styles.podioMedalha}>🥇</Text>
             <View style={[styles.podioBase, styles.basePrimeiro]}>
               <Text style={styles.podioPosicao}>1</Text>
@@ -89,7 +89,7 @@ export default function RankingView() {
 
         {terceiro ? (
           <View style={styles.podioItem}>
-            <Avatar size={56} circleColor={terceiro.avatarColor ?? '#C0392B'} hat={terceiro.equippedHat ?? 'toque'} outfit="normal" ring ringColor="#C0803C" />
+            <Avatar size={56} circleColor={terceiro.avatarColor ?? '#C0392B'} hat={terceiro.equippedHat ?? 'toque'} apron={terceiro.equippedApron ?? 'nenhum'} outfit="normal" ring ringColor="#C0803C" />
             <Text style={styles.podioMedalha}>🥉</Text>
             <View style={[styles.podioBase, styles.baseTerceiro]}>
               <Text style={styles.podioPosicao}>3</Text>
@@ -110,7 +110,7 @@ export default function RankingView() {
         return (
           <View key={usuario.id} style={[styles.linha, souEu && styles.linhaEu]}>
             <Text style={styles.posicao}>{posicao}º</Text>
-            <Avatar size={44} circleColor={usuario.avatarColor ?? '#C0392B'} hat={usuario.equippedHat ?? 'toque'} outfit="normal" />
+            <Avatar size={44} circleColor={usuario.avatarColor ?? '#C0392B'} hat={usuario.equippedHat ?? 'toque'} apron={usuario.equippedApron ?? 'nenhum'} outfit="normal" />
             <View style={styles.info}>
               <Text style={styles.nome}>
                 {usuario.name} {souEu && <Text style={styles.voce}>(você)</Text>}

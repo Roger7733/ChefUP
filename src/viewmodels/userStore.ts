@@ -21,6 +21,7 @@ type UserState = {
   outfit: 'normal' | 'premium';
   equippedHat: Chapeu;
   avatarColor: string;
+  equippedApron: string;
   addCoins: (amount: number) => void;
   addXp: (amount: number) => void;
   setUsuario: (usuario: User) => void;
@@ -30,6 +31,7 @@ type UserState = {
   mudarAparencia: (character: 'mulher' | 'homem', outfit: 'normal' | 'premium') => Promise<void>;
   equiparChapeu: (hat: Chapeu) => Promise<void>;
   escolherCor: (cor: string) => Promise<void>;
+  equiparAvental: (apron: string) => Promise<void>;
 };
 
 export const useUserStore = create<UserState>((set, get) => ({
@@ -45,6 +47,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   outfit: 'normal',
   equippedHat: 'toque',
   avatarColor: '#C0392B',
+  equippedApron: 'nenhum',
 
   addCoins: (amount) => set((state) => ({ coins: state.coins + amount })),
 
@@ -64,6 +67,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       outfit: usuario.outfit || 'normal',
       equippedHat: usuario.equippedHat || 'toque',
       avatarColor: usuario.avatarColor || '#C0392B',
+      equippedApron: usuario.equippedApron || 'nenhum',
     }),
 
   completarFase: async (rewardXp) => {
@@ -79,6 +83,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       streak: estado.streak, lastAccess: estado.lastAccess,
       character: estado.character, outfit: estado.outfit,
       equippedHat: estado.equippedHat, avatarColor: estado.avatarColor,
+      equippedApron: estado.equippedApron,
     };
     await salvarUsuario(usuarioAtualizado);
   },
@@ -95,6 +100,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       streak: novoStreak, lastAccess: hoje,
       character: estado.character, outfit: estado.outfit,
       equippedHat: estado.equippedHat, avatarColor: estado.avatarColor,
+      equippedApron: estado.equippedApron,
     };
     await salvarUsuario(usuarioAtualizado);
   },
@@ -112,6 +118,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       streak: estado.streak, lastAccess: estado.lastAccess,
       character: estado.character, outfit: estado.outfit,
       equippedHat: estado.equippedHat, avatarColor: estado.avatarColor,
+      equippedApron: estado.equippedApron,
     };
     await salvarUsuario(usuarioAtualizado);
 
@@ -135,6 +142,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       streak: estado.streak, lastAccess: estado.lastAccess,
       character: character, outfit: outfit,
       equippedHat: estado.equippedHat, avatarColor: estado.avatarColor,
+      equippedApron: estado.equippedApron,
     };
     await salvarUsuario(usuarioAtualizado);
   },
@@ -149,6 +157,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       streak: estado.streak, lastAccess: estado.lastAccess,
       character: estado.character, outfit: estado.outfit,
       equippedHat: hat, avatarColor: estado.avatarColor,
+      equippedApron: estado.equippedApron,
     };
     await salvarUsuario(usuarioAtualizado);
   },
@@ -163,6 +172,22 @@ export const useUserStore = create<UserState>((set, get) => ({
       streak: estado.streak, lastAccess: estado.lastAccess,
       character: estado.character, outfit: estado.outfit,
       equippedHat: estado.equippedHat, avatarColor: cor,
+      equippedApron: estado.equippedApron,
+    };
+    await salvarUsuario(usuarioAtualizado);
+  },
+
+  equiparAvental: async (apron) => {
+    const estado = get();
+    set({ equippedApron: apron });
+
+    const usuarioAtualizado: User = {
+      id: estado.id, name: estado.name, email: estado.email,
+      coins: estado.coins, xp: estado.xp, level: estado.level,
+      streak: estado.streak, lastAccess: estado.lastAccess,
+      character: estado.character, outfit: estado.outfit,
+      equippedHat: estado.equippedHat, avatarColor: estado.avatarColor,
+      equippedApron: apron,
     };
     await salvarUsuario(usuarioAtualizado);
   },

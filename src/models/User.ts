@@ -11,4 +11,5 @@ export interface User {
     outfit: 'normal' | 'premium';
     equippedHat?: 'nenhum' | 'toque' | 'boina' | 'bandana';
     avatarColor?: string;
+    equippedApron?: string;
 }

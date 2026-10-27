@@ -121,6 +121,7 @@ export default function FeedView() {
                 <Avatar
                   size={40}
                   hat={(post.avatarHat as any) ?? 'toque'}
+                  apron={(post.avatarApron as any) ?? 'nenhum'}
                   outfit="normal"
                   circleColor={post.avatarColor ?? corDoUsuario(post.userId)}
                 />

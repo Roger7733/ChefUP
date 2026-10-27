@@ -16,6 +16,17 @@ const ABAS: { key: Aba; label: string }[] = [
 
 const CORES = ['#C0392B', '#4F7239', '#2C6E7F', '#5B3A57', '#B9770E', '#334155'];
 
+// card fixo pra tirar o avental (não precisa de doc no Firebase)
+const SEM_AVENTAL: Item = {
+  id: '__sem_avental__',
+  name: 'Sem avental',
+  category: 'avental',
+  price: 0,
+  minLevel: 1,
+  avatarHat: 'nenhum',
+  avatarApron: 'nenhum',
+};
+
 export default function Loja() {
   const insets = useSafeAreaInsets();
 
@@ -29,10 +40,18 @@ export default function Loja() {
   const level = useUserStore((s) => s.level);
   const userId = useUserStore((s) => s.id);
   const equippedHat = useUserStore((s) => s.equippedHat);
+  const equippedApron = useUserStore((s) => s.equippedApron);
   const avatarColor = useUserStore((s) => s.avatarColor);
   const comprarItem = useUserStore((s) => s.comprarItem);
   const equiparChapeu = useUserStore((s) => s.equiparChapeu);
+  const equiparAvental = useUserStore((s) => s.equiparAvental);
   const escolherCor = useUserStore((s) => s.escolherCor);
+
+  // monta a lista de uma aba (aventais ganham o card "Sem avental" na frente)
+  function listaDaAba(a: Aba): Item[] {
+    if (a === 'avental') return [SEM_AVENTAL, ...itens.filter((i) => i.category === 'avental')];
+    return itens.filter((i) => i.category === a);
+  }
 
   useEffect(() => {
     async function carregar() {
@@ -50,30 +69,52 @@ export default function Loja() {
     carregar();
   }, [userId]);
 
+  function estaEquipado(item: Item): boolean {
+    if (item.category === 'avental') return (item.avatarApron ?? 'nenhum') === equippedApron;
+    return item.avatarHat === equippedHat;
+  }
+
+  async function equipar(item: Item) {
+    if (item.category === 'avental') await equiparAvental(item.avatarApron ?? 'nenhum');
+    else await equiparChapeu(item.avatarHat);
+  }
+
   async function handleComprar(item: Item) {
     const sucesso = await comprarItem(item.id, item.price);
     if (sucesso) {
       setComprados((a) => [...a, item.id]);
-      await equiparChapeu(item.avatarHat);
+      await equipar(item);
     }
+  }
+
+  function trocarAba(nova: Aba) {
+    setAba(nova);
+    if (nova === 'utensilio') {
+      setSelecionado(null);
+      return;
+    }
+    const itensDaAba = listaDaAba(nova);
+    const alvo = nova === 'chapeu' ? equippedHat : equippedApron;
+    const eq = itensDaAba.find((i) => (nova === 'chapeu' ? i.avatarHat : (i.avatarApron ?? 'nenhum')) === alvo);
+    setSelecionado(eq ?? itensDaAba[0] ?? null);
   }
 
   function renderBotaoPreview() {
     if (!selecionado) return null;
     const item = selecionado;
     const possui = comprados.includes(item.id) || item.price === 0;
-    const equipado = item.avatarHat === equippedHat;
+    const equipado = estaEquipado(item);
     const bloqueado = level < item.minLevel;
     const podePagar = coins >= item.price;
 
     if (equipado) return <View style={[styles.botao, styles.botaoEquipado]}><Text style={styles.botaoTextoClaro}>Equipado</Text></View>;
     if (bloqueado) return <View style={[styles.botao, styles.botaoBloqueado]}><Text style={styles.botaoTextoEscuro}>🔒 Nível {item.minLevel}</Text></View>;
-    if (possui) return <Pressable style={[styles.botao, styles.botaoEquipar]} onPress={() => equiparChapeu(item.avatarHat)}><Text style={styles.botaoTextoClaro}>Equipar</Text></Pressable>;
+    if (possui) return <Pressable style={[styles.botao, styles.botaoEquipar]} onPress={() => equipar(item)}><Text style={styles.botaoTextoClaro}>Equipar</Text></Pressable>;
     if (podePagar) return <Pressable style={[styles.botao, styles.botaoComprar]} onPress={() => handleComprar(item)}><Text style={styles.botaoTextoClaro}>Comprar</Text></Pressable>;
     return <View style={[styles.botao, styles.botaoBloqueado]}><Text style={styles.botaoTextoEscuro}>Faltam moedas</Text></View>;
   }
 
-  const itensAba = itens.filter((i) => i.category === aba);
+  const itensAba = listaDaAba(aba);
 
   return (
     <View style={styles.screen}>
@@ -98,7 +139,11 @@ export default function Loja() {
               )}
               {renderBotaoPreview()}
             </View>
-            <Avatar size={110} hat={selecionado?.avatarHat} />
+            <Avatar
+              size={110}
+              hat={selecionado?.category === 'chapeu' ? selecionado.avatarHat : undefined}
+              apron={selecionado?.category === 'avental' ? (selecionado.avatarApron ?? 'nenhum') : undefined}
+            />
           </View>
 
           {/* cor do fundo */}
@@ -119,7 +164,7 @@ export default function Loja() {
         {/* abas */}
         <View style={styles.tabs}>
           {ABAS.map((t) => (
-            <Pressable key={t.key} style={[styles.tab, aba === t.key && styles.tabAtiva]} onPress={() => setAba(t.key)}>
+            <Pressable key={t.key} style={[styles.tab, aba === t.key && styles.tabAtiva]} onPress={() => trocarAba(t.key)}>
               <Text style={[styles.tabTexto, aba === t.key && styles.tabTextoAtiva]}>{t.label}</Text>
             </Pressable>
           ))}
@@ -135,14 +180,19 @@ export default function Loja() {
         ) : (
           <View style={styles.grade}>
             {itensAba.map((item) => {
-              const equipado = item.avatarHat === equippedHat;
+              const equipado = estaEquipado(item);
               const sel = selecionado?.id === item.id;
               return (
-                <Pressable key={item.id} style={[styles.card, sel && styles.cardSelecionado]} onPress={() => setSelecionado(item)}>
-                  <Avatar size={56} hat={item.avatarHat} />
-                  <Text style={styles.cardNome}>{item.name}</Text>
+                <Pressable
+                  key={item.id}
+                  style={[styles.card, sel && styles.cardSelecionado, equipado && styles.cardEquipado]}
+                  onPress={() => setSelecionado(item)}
+                >
+                  {item.category === 'avental'
+                    ? <Avatar size={56} apron={item.avatarApron ?? 'nenhum'} />
+                    : <Avatar size={56} hat={item.avatarHat} />}
+                  <Text style={styles.cardNome} numberOfLines={1}>{item.name}</Text>
                   <Text style={styles.cardPreco}>{item.price === 0 ? 'Grátis' : `🪙 ${item.price}`}</Text>
-                  {equipado && <Text style={styles.badge}>✓ Equipado</Text>}
                 </Pressable>
               );
             })}
@@ -181,11 +231,11 @@ const styles = StyleSheet.create({
   tabTextoAtiva: { color: '#FFFFFF' },
 
   grade: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  card: { width: '47%', backgroundColor: '#FFFFFF', borderRadius: 16, padding: 12, alignItems: 'center', gap: 4, borderWidth: 1, borderColor: '#F0E6D2' },
+  card: { width: '47%', height: 150, backgroundColor: '#FFFFFF', borderRadius: 16, padding: 12, alignItems: 'center', justifyContent: 'center', gap: 4, borderWidth: 1, borderColor: '#F0E6D2' },
   cardSelecionado: { borderColor: '#D63E2A', borderWidth: 2 },
+  cardEquipado: { opacity: 0.45 },
   cardNome: { fontSize: 13, fontWeight: 'bold', color: '#2A1A12', textAlign: 'center' },
   cardPreco: { fontSize: 12, fontWeight: '600', color: '#A9761A' },
-  badge: { fontSize: 11, fontWeight: 'bold', color: '#4F7239' },
 
   vazio: { padding: 40, alignItems: 'center' },
   vazioTexto: { fontSize: 15, color: '#9B8674', fontWeight: '600' },

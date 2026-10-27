@@ -25,6 +25,7 @@ export default function Avaliar() {
   const completarFase = useUserStore((state) => state.completarFase);
   const equippedHat = useUserStore((state) => state.equippedHat);
   const avatarColor = useUserStore((state) => state.avatarColor);
+  const equippedApron = useUserStore((state) => state.equippedApron);
 
   const [foto, setFoto] = useState<string | null>(null);
   const [processando, setProcessando] = useState(false);
@@ -116,6 +117,7 @@ export default function Avaliar() {
         date: new Date().toISOString(),
         avatarHat: equippedHat,
         avatarColor: avatarColor,
+        avatarApron: equippedApron,
       });
       setPublicado(true);
     } catch (erro: any) {
