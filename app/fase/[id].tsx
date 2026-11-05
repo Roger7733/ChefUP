@@ -2,9 +2,18 @@ import { CONTEUDO_FASES } from '@/data/faseConteudo';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-// fotos dos pratos — adicione aqui conforme for colocando as imagens em assets/pratos/
+// fotos dos pratos — em assets/pratos/
+// IMPORTANTE: deixe aqui SÓ as linhas das imagens que você JÁ salvou.
+// Um require pra um arquivo que não existe quebra o app. As fases sem
+// imagem continuam mostrando o emoji automaticamente.
 const IMAGENS_PRATOS: Record<string, any> = {
-  'italiana-1': require('../../assets/pratos/massa-al-dente.png'),
+  'italiana-1': require('../../assets/pratos/fase1_massa.png'),
+  'italiana-2': require('../../assets/pratos/fase2_alho_oleo.png'),
+  'italiana-3': require('../../assets/pratos/fase3_corte_cebola.png'),
+  'italiana-4': require('../../assets/pratos/fase4_molho_tomate.png'),
+  'italiana-5': require('../../assets/pratos/fase5_sugo.png'),
+  'italiana-6': require('../../assets/pratos/fase6_soffritto.png'),
+  'italiana-7': require('../../assets/pratos/fase7_lasanha.png'),
 };
 
 export default function FaseIntro() {
@@ -111,7 +120,7 @@ const styles = StyleSheet.create({
 
   conteudo: { padding: 24, paddingTop: 10, paddingBottom: 120 },
   hero: {
-    width: '100%', height: 180, borderRadius: 18, backgroundColor: '#F4ECD8',
+    width: '100%', aspectRatio: 1, borderRadius: 18, backgroundColor: '#F4ECD8',
     justifyContent: 'center', alignItems: 'center', marginBottom: 16, overflow: 'hidden',
   },
   heroEmoji: { fontSize: 64 },
