@@ -3,7 +3,7 @@ import { Item } from '@/models/Item';
 import { buscarInventario, buscarItens } from '@/services/shopService';
 import { useUserStore } from '@/viewmodels/userStore';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Aba = 'chapeu' | 'avental' | 'utensilio';
@@ -15,6 +15,8 @@ const ABAS: { key: Aba; label: string }[] = [
 ];
 
 const CORES = ['#C0392B', '#4F7239', '#2C6E7F', '#5B3A57', '#B9770E', '#334155'];
+
+const PROTETOR_PRECO = 150;
 
 // card fixo pra tirar o avental (não precisa de doc no Firebase)
 const SEM_AVENTAL: Item = {
@@ -42,7 +44,9 @@ export default function Loja() {
   const equippedHat = useUserStore((s) => s.equippedHat);
   const equippedApron = useUserStore((s) => s.equippedApron);
   const avatarColor = useUserStore((s) => s.avatarColor);
+  const streakShields = useUserStore((s) => s.streakShields);
   const comprarItem = useUserStore((s) => s.comprarItem);
+  const comprarProtetor = useUserStore((s) => s.comprarProtetor);
   const equiparChapeu = useUserStore((s) => s.equiparChapeu);
   const equiparAvental = useUserStore((s) => s.equiparAvental);
   const escolherCor = useUserStore((s) => s.escolherCor);
@@ -87,6 +91,13 @@ export default function Loja() {
     }
   }
 
+  async function handleComprarProtetor() {
+    const ok = await comprarProtetor(PROTETOR_PRECO);
+    if (ok) {
+      Alert.alert('Protetor comprado! 🧊', 'Ele será usado automaticamente se você perder um dia, pra não zerar seu streak.');
+    }
+  }
+
   function trocarAba(nova: Aba) {
     setAba(nova);
     if (nova === 'utensilio') {
@@ -125,53 +136,75 @@ export default function Loja() {
         </View>
       </View>
 
+      {/* abas fixas no topo (fora da rolagem) */}
+      <View style={styles.tabsBar}>
+        {ABAS.map((t) => (
+          <Pressable key={t.key} style={[styles.tab, aba === t.key && styles.tabAtiva]} onPress={() => trocarAba(t.key)}>
+            <Text style={[styles.tabTexto, aba === t.key && styles.tabTextoAtiva]}>{t.label}</Text>
+          </Pressable>
+        ))}
+      </View>
+
       <ScrollView contentContainerStyle={styles.conteudo}>
-        {/* prévia */}
-        <View style={styles.preview}>
-          <Text style={styles.previewLabel}>PRÉVIA</Text>
-          <View style={styles.previewRow}>
-            <View style={styles.previewInfo}>
-              <Text style={styles.previewNome}>{selecionado?.name ?? 'Seu chef'}</Text>
-              {selecionado && (
-                <Text style={styles.previewPreco}>
-                  {selecionado.price === 0 ? 'Grátis' : `🪙 ${selecionado.price}`}
-                </Text>
-              )}
-              {renderBotaoPreview()}
+        {/* prévia (só pra chapéu/avental) */}
+        {aba !== 'utensilio' && (
+          <View style={styles.preview}>
+            <Text style={styles.previewLabel}>PRÉVIA</Text>
+            <View style={styles.previewRow}>
+              <View style={styles.previewInfo}>
+                <Text style={styles.previewNome}>{selecionado?.name ?? 'Seu chef'}</Text>
+                {selecionado && (
+                  <Text style={styles.previewPreco}>
+                    {selecionado.price === 0 ? 'Grátis' : `🪙 ${selecionado.price}`}
+                  </Text>
+                )}
+                {renderBotaoPreview()}
+              </View>
+              <Avatar
+                size={110}
+                hat={selecionado?.category === 'chapeu' ? selecionado.avatarHat : undefined}
+                apron={selecionado?.category === 'avental' ? (selecionado.avatarApron ?? 'nenhum') : undefined}
+              />
             </View>
-            <Avatar
-              size={110}
-              hat={selecionado?.category === 'chapeu' ? selecionado.avatarHat : undefined}
-              apron={selecionado?.category === 'avental' ? (selecionado.avatarApron ?? 'nenhum') : undefined}
-            />
-          </View>
 
-          {/* cor do fundo */}
-          <View style={styles.corSecao}>
-            <Text style={styles.corLabel}>Cor do fundo</Text>
-            <View style={styles.cores}>
-              {CORES.map((c) => (
-                <Pressable
-                  key={c}
-                  onPress={() => escolherCor(c)}
-                  style={[styles.corBolinha, { backgroundColor: c }, avatarColor === c && styles.corSelecionada]}
-                />
-              ))}
+            {/* cor do fundo */}
+            <View style={styles.corSecao}>
+              <Text style={styles.corLabel}>Cor do fundo</Text>
+              <View style={styles.cores}>
+                {CORES.map((c) => (
+                  <Pressable
+                    key={c}
+                    onPress={() => escolherCor(c)}
+                    style={[styles.corBolinha, { backgroundColor: c }, avatarColor === c && styles.corSelecionada]}
+                  />
+                ))}
+              </View>
             </View>
           </View>
-        </View>
+        )}
 
-        {/* abas */}
-        <View style={styles.tabs}>
-          {ABAS.map((t) => (
-            <Pressable key={t.key} style={[styles.tab, aba === t.key && styles.tabAtiva]} onPress={() => trocarAba(t.key)}>
-              <Text style={[styles.tabTexto, aba === t.key && styles.tabTextoAtiva]}>{t.label}</Text>
-            </Pressable>
-          ))}
-        </View>
-
-        {/* itens da aba */}
-        {carregando ? (
+        {/* conteúdo */}
+        {aba === 'utensilio' ? (
+          <View style={styles.utensilioCard}>
+            <Text style={styles.utensilioIcone}>🧊</Text>
+            <Text style={styles.utensilioNome}>Protetor de streak</Text>
+            <Text style={styles.utensilioDesc}>
+              Perdeu um dia? Ele é usado sozinho e seu streak continua de pé. Dá pra acumular vários.
+            </Text>
+            <View style={styles.utensilioPossuiPill}>
+              <Text style={styles.utensilioPossuiTexto}>Você tem: {streakShields} 🧊</Text>
+            </View>
+            {coins >= PROTETOR_PRECO ? (
+              <Pressable style={styles.utensilioBotao} onPress={handleComprarProtetor}>
+                <Text style={styles.botaoTextoClaro}>Comprar · 🪙 {PROTETOR_PRECO}</Text>
+              </Pressable>
+            ) : (
+              <View style={[styles.utensilioBotao, styles.botaoBloqueado]}>
+                <Text style={styles.botaoTextoEscuro}>Faltam moedas (🪙 {PROTETOR_PRECO})</Text>
+              </View>
+            )}
+          </View>
+        ) : carregando ? (
           <ActivityIndicator size="large" color="#D63E2A" style={{ marginTop: 20 }} />
         ) : itensAba.length === 0 ? (
           <View style={styles.vazio}>
@@ -209,9 +242,12 @@ const styles = StyleSheet.create({
   titulo: { fontSize: 26, fontWeight: 'bold', color: '#2A1A12' },
   moedasPill: { backgroundColor: '#FFF3D6', paddingVertical: 6, paddingHorizontal: 14, borderRadius: 20 },
   moedasTexto: { fontSize: 15, fontWeight: 'bold', color: '#A9761A' },
-  conteudo: { padding: 20, gap: 16, paddingBottom: 40 },
 
-  preview: { backgroundColor: '#FFFFFF', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#F0E6D2' },
+  tabsBar: { flexDirection: 'row', gap: 8, paddingHorizontal: 20, paddingBottom: 14 },
+
+  conteudo: { paddingHorizontal: 20, paddingBottom: 40, gap: 16 },
+
+  preview: { backgroundColor: '#FFFFFF', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#F0E6D2', minHeight: 240 },
   previewLabel: { fontSize: 11, fontWeight: 'bold', color: '#C9A24A', letterSpacing: 1, marginBottom: 8 },
   previewRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   previewInfo: { flex: 1, gap: 8, paddingRight: 12 },
@@ -224,7 +260,6 @@ const styles = StyleSheet.create({
   corBolinha: { width: 30, height: 30, borderRadius: 15, borderWidth: 2, borderColor: 'transparent' },
   corSelecionada: { borderColor: '#2A1A12' },
 
-  tabs: { flexDirection: 'row', gap: 8 },
   tab: { flex: 1, paddingVertical: 10, borderRadius: 20, backgroundColor: '#FFFFFF', alignItems: 'center', borderWidth: 1, borderColor: '#F0E6D2' },
   tabAtiva: { backgroundColor: '#2A1A12', borderColor: '#2A1A12' },
   tabTexto: { fontSize: 13, fontWeight: 'bold', color: '#9B8674' },
@@ -239,6 +274,20 @@ const styles = StyleSheet.create({
 
   vazio: { padding: 40, alignItems: 'center' },
   vazioTexto: { fontSize: 15, color: '#9B8674', fontWeight: '600' },
+
+  utensilioCard: {
+    backgroundColor: '#FFFFFF', borderRadius: 18, padding: 20, alignItems: 'center', justifyContent: 'center',
+    gap: 10, borderWidth: 1, borderColor: '#F0E6D2', minHeight: 240,
+  },
+  utensilioIcone: { fontSize: 48 },
+  utensilioNome: { fontSize: 18, fontWeight: 'bold', color: '#2A1A12' },
+  utensilioDesc: { fontSize: 14, color: '#9B8674', textAlign: 'center', lineHeight: 20 },
+  utensilioPossuiPill: { backgroundColor: '#EAF1FB', paddingVertical: 6, paddingHorizontal: 14, borderRadius: 20, marginTop: 4 },
+  utensilioPossuiTexto: { fontSize: 14, fontWeight: 'bold', color: '#2C6E7F' },
+  utensilioBotao: {
+    backgroundColor: '#D63E2A', paddingVertical: 12, paddingHorizontal: 24, borderRadius: 10,
+    alignItems: 'center', alignSelf: 'stretch', marginTop: 6,
+  },
 
   botao: { paddingVertical: 10, borderRadius: 10, alignItems: 'center', alignSelf: 'flex-start', paddingHorizontal: 20, marginTop: 4 },
   botaoComprar: { backgroundColor: '#D63E2A' },

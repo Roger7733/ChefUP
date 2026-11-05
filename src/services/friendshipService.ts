@@ -11,9 +11,9 @@ import {
   where,
 } from 'firebase/firestore';
 
-// 1. Buscar usuários pelo nome (traz todos e filtra no app: ignora maiúsculas e busca por "contém")
+// 1. Buscar usuários por nome OU @username (traz todos e filtra no app: ignora maiúsculas e "contém")
 export async function buscarUsuariosPorNome(termo: string, meuId: string): Promise<User[]> {
-  const termoLimpo = termo.trim().toLowerCase();
+  const termoLimpo = termo.trim().toLowerCase().replace(/^@/, '');
   if (termoLimpo === '') return [];
 
   const snapshot = await getDocs(collection(db, 'users'));
@@ -22,7 +22,8 @@ export async function buscarUsuariosPorNome(termo: string, meuId: string): Promi
   snapshot.forEach((documento) => {
     const usuario = documento.data() as User;
     const nome = (usuario.name || '').toLowerCase();
-    if (usuario.id !== meuId && nome.includes(termoLimpo)) {
+    const user = (usuario.username || '').toLowerCase();
+    if (usuario.id !== meuId && (nome.includes(termoLimpo) || user.includes(termoLimpo))) {
       usuarios.push(usuario);
     }
   });

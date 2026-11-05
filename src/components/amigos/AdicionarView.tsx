@@ -160,7 +160,7 @@ export default function AdicionarView() {
         <Ionicons name="search" size={18} color="#9B8674" />
         <TextInput
           style={styles.buscaInput}
-          placeholder="Buscar um chef pelo nome"
+          placeholder="Buscar por nome ou @usuario"
           placeholderTextColor="#B3A796"
           value={termo}
           onChangeText={setTermo}

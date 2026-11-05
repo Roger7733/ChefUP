@@ -4,7 +4,6 @@ import { sair } from '@/services/authService';
 import { listarProgressoDoUsuario } from '@/services/progressService';
 import { calcularNivel } from '@/utils/levelSystem';
 import { useUserStore } from '@/viewmodels/userStore';
-import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,6 +25,7 @@ export default function Perfil() {
 
   const name = useUserStore((s) => s.name);
   const email = useUserStore((s) => s.email);
+  const username = useUserStore((s) => s.username);
   const coins = useUserStore((s) => s.coins);
   const xp = useUserStore((s) => s.xp);
   const level = useUserStore((s) => s.level);
@@ -50,7 +50,7 @@ export default function Perfil() {
   const xpTotalNivel = Math.max(proximo - inicio, 1);
   const pct = Math.min(Math.max(xpNoNivel / xpTotalNivel, 0), 1);
 
-  const usuario = email ? '@' + email.split('@')[0] : '';
+  const usuario = username ? '@' + username : (email ? '@' + email.split('@')[0] : '');
   const dados = { level, fasesConcluidas: fases, fasesCincoEstrelas: fases5 };
 
   async function handleSair() {
@@ -131,10 +131,6 @@ export default function Perfil() {
         </View>
 
         {/* ações */}
-        <Pressable style={styles.botaoPrimario} onPress={() => router.push('/loja')}>
-          <Text style={styles.botaoPrimarioTexto}>Personalizar chef</Text>
-        </Pressable>
-
         <Pressable style={styles.botaoSair} onPress={handleSair}>
           <Text style={styles.botaoSairTexto}>Sair da conta</Text>
         </Pressable>
@@ -243,8 +239,6 @@ const styles = StyleSheet.create({
   modalBotao: { backgroundColor: '#D63E2A', paddingVertical: 12, paddingHorizontal: 28, borderRadius: 10, marginTop: 8 },
   modalBotaoTexto: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 15 },
 
-  botaoPrimario: { backgroundColor: '#D63E2A', paddingVertical: 14, borderRadius: 12, alignItems: 'center', marginTop: 4 },
-  botaoPrimarioTexto: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
   botaoSair: { borderWidth: 1, borderColor: '#D63E2A', paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
   botaoSairTexto: { color: '#D63E2A', fontSize: 16, fontWeight: 'bold' },
 });

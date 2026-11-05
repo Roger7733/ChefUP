@@ -2,6 +2,7 @@ export interface User {
     id: string;
     name: string;
     email: string;
+    username?: string;
     level: number;
     xp: number;
     coins: number;
@@ -12,4 +13,5 @@ export interface User {
     equippedHat?: 'nenhum' | 'toque' | 'boina' | 'bandana';
     avatarColor?: string;
     equippedApron?: string;
+    streakShields?: number;
 }
